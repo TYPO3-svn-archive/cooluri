@@ -187,14 +187,14 @@ class LinkManger_Main {
   
   public function old() {
     if (empty($_GET['l']))
-      $let = 'a';
+      $let = '%';
     else
       $let = $this->db->escape($_GET['l']);
     
     $c = '<h1>Old links</h1>';
     
     $c .= '<p class="center">';
-    $c .= '<b><a href="'.$this->file.'?mod=old&amp;l=%">all</a></b>
+    $c .= '<b><a href="'.$this->file.'?mod=old">all</a></b>
     ';
     for ($i=ord('A');$i<=ord('Z');$i++) {
       $c .= '<b><a href="'.$this->file.'?mod=old&amp;l='.strtoupper(chr($i)).'">'.strtoupper(chr($i)).'</a></b>

@@ -40,3 +40,9 @@ div.typo3-noDoc div.succes p {
 	color: Green;
 	font-weight: bold;
 }
+fieldset input {
+	width: 400px;
+}
+fieldset input.check {
+	width: auto;
+}

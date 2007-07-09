@@ -20,7 +20,7 @@
   </cache>
 
   <pagepath>
-    <title>alias,subtitle,title</title>
+    <title>tx_realurl_pathsegment,alias,subtitle,title</title>
     <saveto>id</saveto>
     <default>0</default>    
     <userfunc>tx_cooluri->getPageTitle</userfunc>

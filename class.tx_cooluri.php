@@ -306,6 +306,8 @@ function getPageTitle($conf,$value) {
     $id = $page['pid'];
     
     --$max;
+    
+    if (!empty($conf->maxsegments) && count($pagepath)>=(int)$conf->maxsegments) $max = 0;
   }
   return $pagepath;
 }

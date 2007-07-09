@@ -164,7 +164,8 @@
         <xs:element name="allparamconstraints" type="constraintType" minOccurs="0"/> <!--cache-->
         <xs:element name="additionalWhere" type="sql" minOccurs="0"/> <!--cache-->
         
-        <xs:element name="userfunc" type="xs:token" minOccurs="0"/> <!--cache-->
+        <xs:element name="userfunc" type="xs:token" minOccurs="0"/>
+        <xs:element name="maxsegments" type="xs:unsignedInt" minOccurs="0"/>
       </xs:all>
     </xs:complexType>
   </xs:element>

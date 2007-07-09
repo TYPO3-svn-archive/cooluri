@@ -33,3 +33,9 @@ CREATE TABLE `link_oldlinks` (
   KEY `id_2` (`id`)
 ) ENGINE=MyISAM;
 
+#
+# Modifying pages table
+#
+CREATE TABLE pages (
+	tx_realurl_pathsegment varchar(30) DEFAULT '' NOT NULL,
+); 
