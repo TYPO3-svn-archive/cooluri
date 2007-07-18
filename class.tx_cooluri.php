@@ -77,7 +77,7 @@ function params2cool(&$params, $ref) {
   if (!$GLOBALS['TSFE']->config['config']['tx_cooluri_enable']) {
 		return;
 	}
-  
+
   if (!empty($params['args']['page']['shortcut']) && $params['args']['page']['doktype']==4) {
     $shortcut = $params['args']['page']['shortcut'];
     $limit = 5;

@@ -8,7 +8,7 @@ CREATE TABLE `link_cache` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `params` blob,
   `url` text,
-  `tstamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  `tstamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `crdatetime` datetime default NULL,
   `sticky` tinyint(1) unsigned default 0,
   PRIMARY KEY  (`id`),

@@ -396,8 +396,8 @@ class Link_Translate {
   				$originalparams = Link_Func::array_intersect_key($originalparams,self::$coolParamsKeys);
   			}
   			
-  			$q = $db->query('SELECT *, DATEDIFF(NOW(),tstamp) AS daydiff FROM '.$tp.'cache WHERE params=\''.Link_Func::prepareParamsForCache($originalparams).'\'');
-  			$row = $db->fetch($q);
+  			$q = $db->query('SELECT *, DATEDIFF(NOW(),tstamp) AS daydiff FROM '.$tp.'cache WHERE params=\''.Link_Func::prepareParamsForCache($originalparams,$tp).'\'');
+        $row = $db->fetch($q);
   			if ($row) {
 
     			if ($row['daydiff']==NULL) $row['daydiff'] = 2147483647; // daydiff isn't set, we force new check

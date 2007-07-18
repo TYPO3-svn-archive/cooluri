@@ -113,9 +113,9 @@ class Link_Func {
   	else return $xml['after'];
   }
   
-  public static function prepareParamsForCache($params) {
-  	ksort($params);
-  	return Link_DB::escape(serialize($params));
+  public static function prepareParamsForCache($params,$tp = 'link_') {
+    ksort($params);
+  	return Link_DB::escape(serialize($params),$tp);
   }
   
   public static function cache2params($cache) {

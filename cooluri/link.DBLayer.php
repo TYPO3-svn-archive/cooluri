@@ -16,7 +16,7 @@ public static function getInstance() {
   return self::$_instance;
 }
 
-public function query($stmt) {  
+public function query($stmt) {
   return $GLOBALS['TYPO3_DB']->sql_query($stmt);
 }
 
@@ -28,8 +28,8 @@ public function fetch_row($res) {
   return $GLOBALS['TYPO3_DB']->sql_fetch_row($res);
 }
 
-public static function escape($string) {
-  return $GLOBALS['TYPO3_DB']->quoteStr($string,'');
+public static function escape($string,$tp = 'link_') {
+  return $GLOBALS['TYPO3_DB']->quoteStr($string,$tp.'cache');
 }
 
 public function error() {
