@@ -38,4 +38,5 @@ CREATE TABLE `link_oldlinks` (
 #
 CREATE TABLE pages (
 	tx_realurl_pathsegment varchar(30) DEFAULT '' NOT NULL,
+	tx_cooluri_exclude tinyint(1) unsigned default 0
 ); 

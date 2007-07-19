@@ -291,6 +291,12 @@ function getPageTitle($conf,$value) {
     }
     if (!$page) break;
     
+    if ($page['tx_cooluri_exclude']==1 && !empty($pagepath)) {
+      ++$max;
+      $id = $page['pid'];
+      continue;
+    }
+    
     foreach ($sel as $s) {
       if (!empty($page[$s])) {
         $title = $page[$s];

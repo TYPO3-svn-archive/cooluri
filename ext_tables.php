@@ -15,6 +15,15 @@ $TCA['pages']['columns']['tx_realurl_pathsegment'] = array(
 	)
 ); 
 
+$TCA['pages']['columns']['tx_cooluri_exclude'] = array(
+	'label' => 'LLL:EXT:cooluri/locallang_db.php:pages.tx_cooluri_exclude',
+	'config' => Array (
+		'type' => 'check',
+		'default' => '1' 
+	)
+); 
+
 t3lib_extMgm::addToAllTCAtypes('pages','tx_realurl_pathsegment','2','after:nav_title');
+t3lib_extMgm::addToAllTCAtypes('pages','tx_cooluri_exclude');
 
 ?>
