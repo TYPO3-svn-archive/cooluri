@@ -135,7 +135,8 @@ function params2cool(&$params, $ref) {
 }
 
 function getDomain($id) {
-  $enable = ' AND deleted=0 AND hidden=0';
+  $enable = ' AND pages.deleted=0 AND pages.hidden=0';
+  $enable2 = ' AND deleted=0 AND hidden=0';
   $db = &$GLOBALS['TYPO3_DB'];
   $max = 10;
   while ($max>0 && $id) {
@@ -144,7 +145,7 @@ function getDomain($id) {
     $q = $db->exec_SELECTquery('pages.title, pages.pid, pages.is_siteroot, pages.uid AS id, sys_domain.domainName, sys_domain.redirectTo','pages LEFT JOIN sys_domain ON pages.uid=sys_domain.pid','pages.uid='.$id.$enable,'','sys_domain.sorting');
     $page = $db->sql_fetch_assoc($q);
         
-    $temp = $db->exec_SELECTquery('COUNT(*) as num','sys_template','pid='.$id.' AND root=1'.$enable);
+    $temp = $db->exec_SELECTquery('COUNT(*) as num','sys_template','pid='.$id.' AND root=1'.$enable2);
     $count = $db->sql_fetch_assoc($temp);
     
     if ($page['domainName'] && !$page['redirectTo']) {
