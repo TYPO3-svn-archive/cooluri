@@ -142,7 +142,7 @@ function getDomain($id) {
   while ($max>0 && $id) {
     
     //$page = $GLOBALS['TSFE']->sys_page->getPage($id);
-    $q = $db->exec_SELECTquery('pages.title, pages.pid, pages.is_siteroot, pages.uid AS id, sys_domain.domainName, sys_domain.redirectTo','pages LEFT JOIN sys_domain ON pages.uid=sys_domain.pid','pages.uid='.$id.$enable,'','sys_domain.sorting');
+    $q = $db->exec_SELECTquery('pages.title, pages.pid, pages.is_siteroot, pages.uid AS id, sys_domain.domainName, sys_domain.redirectTo','pages LEFT JOIN sys_domain ON pages.uid=sys_domain.pid','pages.uid='.$id.$enable.' AND sys_domain.hidden=0','','sys_domain.sorting');
     $page = $db->sql_fetch_assoc($q);
         
     $temp = $db->exec_SELECTquery('COUNT(*) as num','sys_template','pid='.$id.' AND root=1'.$enable2);
