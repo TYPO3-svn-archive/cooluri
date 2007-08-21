@@ -248,8 +248,10 @@ function getPageTitleBE($conf,$value) {
     
     if (!empty($conf->sanitize) && $conf->sanitize==1) {
       $pagepath[] = Link_Func::sanitize_title_with_dashes($title);
-    } else {
+    } elseif (!isset($conf->urlize) || $conf->urlize!=0) {
       $pagepath[] = Link_Func::URLize($title);
+    } else {
+      $pagepath[] = urlencode($title);
     }
     $id = $page['pid'];
     

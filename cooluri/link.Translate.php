@@ -41,7 +41,7 @@ class Link_Translate {
         }
       }
       // now we have in $uri our URI to parse
-      
+
       // let's remove uninteresting parts (those are not even cached)
       if (!empty($lConf->removeparts) && !empty($lConf->removeparts->part)) {
       	$originaluri = $uri;
@@ -56,12 +56,14 @@ class Link_Translate {
         if (!empty($lConf->removeparts['redirect']) && $lConf->removeparts['redirect']==1)
           if (!empty($uri) && $uri!=$originaluri) Link_Func::redirect(Link_Func::prepareforOutput($uri,$lConf));
       }
+      $temp = explode('?',$uri);
       if (!empty($lConf->urlsuffix)) {
-        $uri = preg_replace('~'.Link_Func::addregexpslashes((string)$lConf->urlsuffix).'$~','',$uri);
+        $temp[0] = preg_replace('~'.Link_Func::addregexpslashes((string)$lConf->urlsuffix).'$~','',$temp[0]);
       }
       if (!empty($lConf->urlprefix)) {
-        $uri = preg_replace('~^'.Link_Func::addregexpslashes((string)$lConf->urlprefix).'~','',$uri);
+        $temp[0] = preg_replace('~^'.Link_Func::addregexpslashes((string)$lConf->urlprefix).'~','',$temp[0]);
       }
+      $uri = implode('?',$temp);
       // now we remove opening slash
       $uri = preg_replace('~^/*~','',$uri);
       
@@ -91,7 +93,7 @@ class Link_Translate {
   				$tempurix = $tempuri[0];
   			}
   			
-  			$q = $db->query('SELECT * FROM '.$tp.'cache WHERE url=\''.$xuri.'\' OR url=\''.$tempurix.'\'');
+        $q = $db->query('SELECT * FROM '.$tp.'cache WHERE url=\''.$xuri.'\' OR url=\''.$tempurix.'\'');
   			
   			$row = $db->fetch($q);
   			if ($row) {
@@ -680,9 +682,9 @@ class Link_Translate {
   			}
   		} 
   		
-  		if (!empty($params)) $path .= $params;
+  		//if (!empty($params)) $path .= $params;
   		
-  		return Link_Func::prepareforOutput($path,$lConf);
+  		return Link_Func::prepareforOutput($path,$lConf).(empty($params)?'':$params);
   		
   	} else {
   		return (empty($file)?$_SERVER['PHP_SELF']:$file).(empty($params)?'':'?'.http_build_query($params,'',$entityampersand?'&amp;':'&'));

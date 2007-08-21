@@ -106,14 +106,27 @@ class  tx_cooluri_module1 extends t3lib_SCbase {
 						$this->content.=$this->doc->header('CoolURIs\' project\'s LinkManager');
             
             require_once '../cooluri/manager/linkmanager.Main.php';
-            if (file_exists(PATH_typo3conf.'CoolUriConf.xml'))
+            /*if (file_exists(PATH_typo3conf.'CoolUriConf.xml'))
               $lm = new LinkManger_Main('index.php',PATH_typo3conf.'CoolUriConf.xml');
             elseif (file_exists('../cooluri/CoolUriConf.xml'))
               $lm = new LinkManger_Main('index.php','../cooluri/CoolUriConf.xml');
             else {
               $this->content .= 'XML Config file not found';
               return;
+            }*/
+            
+            $this->confArray = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['cooluri']);
+            if (file_exists($BACK_PATH.'../'.$this->confArray['XMLPATH'].'CoolUriConf.xml'))
+              $lt = $BACK_PATH.'../'.$this->confArray['XMLPATH'].'CoolUriConf.xml';
+            elseif (file_exists(PATH_typo3conf.'CoolUriConf.xml'))
+              $lt = PATH_typo3conf.'CoolUriConf.xml';
+            elseif (file_exists(dirname(__FILE__).'/../cooluri/CoolUriConf.xml'))
+              $lt = dirname(__FILE__).'/cooluri/CoolUriConf.xml';
+            else {
+              $this->content .= 'XML Config file not found';
+              return;
             }
+            $lm = new LinkManger_Main('index.php',$lt);
               
             
             $this->content .= $lm->menu();

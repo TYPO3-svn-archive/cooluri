@@ -19,7 +19,7 @@ $TCA['pages']['columns']['tx_cooluri_exclude'] = array(
 	'label' => 'LLL:EXT:cooluri/locallang_db.php:pages.tx_cooluri_exclude',
 	'config' => Array (
 		'type' => 'check',
-		'default' => '1' 
+		'default' => '0' 
 	)
 ); 
 

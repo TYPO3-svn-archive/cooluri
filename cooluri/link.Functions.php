@@ -202,11 +202,8 @@ class Link_Func {
   }
   
   public static function URLize($text) {
-        $sonderzeichen = array( 
-          'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
-          'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue'
-         );
-	      $text = strtr($text, $sonderzeichen);
+
+	      $text = strtr($text, self::$sonderzeichen);
         $text = self::utf2ascii($text);
         $text = str_replace('\'', '', $text);
         $text = preg_replace('/\W+/', '-', $text);
@@ -327,12 +324,34 @@ public static function prepareLinkForCache($path,$lConf) {
   
 }
 
-public static function remove_accents($string) {
-	    $sonderzeichen = array( 
+private static $sonderzeichen = array( 
         'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
-        'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue'
+        'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue',
+        'è' => 'e' , 'é' => 'e', 'ê' => 'e',
+         'à' => 'a', 'â' => 'a',
+         'ù' => 'u', 'û' => 'u',
+         'î' => 'i',
+         'ô' => 'o',
+         '¥' => 'Y', 'µ' => 'u', 'À' => 'A', 'Á' => 'A',
+'Â' => 'A', 'Ã' => 'A', 'Å' => 'A',
+'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
+'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I',
+'Î' => 'I', 'Ï' => 'I', 'Ð' => 'D', 'Ñ' => 'N',
+'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O',
+'Ø' => 'O', 'Ù' => 'U', 'Ú' => 'U',
+'Û' => 'U', 'Ý' => 'Y',
+'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a',
+'å' => 'a', 'æ' => 'a', 'ç' => 'c',
+'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e',
+'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i',
+'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o',
+'ô' => 'o', 'õ' => 'o', 'ø' => 'o',
+'ù' => 'u', 'ú' => 'u', 'û' => 'u',
+'ý' => 'y', 'ÿ' => 'y'
        );
-      $string = strtr($string, $sonderzeichen);
+
+public static function remove_accents($string) { 
+      $string = strtr($string, self::$sonderzeichen);
       
       if ( !preg_match('/[\x80-\xff]/', $string) )
 	        return $string;
