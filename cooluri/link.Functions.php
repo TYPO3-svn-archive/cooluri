@@ -105,6 +105,9 @@ class Link_Func {
     if (!empty($conf->sanitize) && $conf->sanitize==1) {
       return self::sanitize_title_with_dashes($val);
     }
+    if (!empty($conf->t3conv) && $conf->t3conv==1) {
+      return self::specCharsToASCII($val);
+    }
   	return $val;
   }
   
@@ -309,6 +312,24 @@ public static function seems_utf8($Str) { # by bmorel at ssi dot fr
 	    }
 	    return true;
 	}
+
+
+private static $cs = null;
+public static function specCharsToASCII($s)
+{
+	if (!self::$cs) {
+    if (!class_exists('t3lib_div')) return self::utf2ascii($s);
+    self::$cs = t3lib_div::makeInstance('t3lib_cs');
+  }
+	$charset = $GLOBALS['TSFE']->metaCharset;
+	if ($charset == "") $charset = "utf-8";
+  $text = self::$cs->specCharsToASCII($charset, $s);
+  $text = str_replace('\'', '', $text);
+  $text = preg_replace('/\W+/', '-', $text);
+  $text = trim($text, '-');
+  $text = strtolower($text);
+  return $text;
+}	
 
 public static function prepareLinkForCache($path,$lConf) {
   if (!empty($lConf->cache->prefix)) {

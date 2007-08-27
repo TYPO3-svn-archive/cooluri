@@ -24,6 +24,7 @@
     <saveto>id</saveto>
     <default>0</default>    
     <userfunc>tx_cooluri->getPageTitle</userfunc>
+    <t3conv>1</t3conv>
   </pagepath>
  
   <uriparts>
@@ -34,7 +35,7 @@
         <translatetoif>
           <match>^[0-9]+$</match>
         </translatetoif>
-        <urlize>1</urlize>
+        <t3conv>1</t3conv>
       </lookindb>
     </part>
     <part>
@@ -44,7 +45,7 @@
         <translatetoif>
           <match>^[0-9]+$</match>
         </translatetoif>
-        <urlize>1</urlize>
+        <t3conv>1</t3conv>
       </lookindb>
     </part>
   </uriparts>

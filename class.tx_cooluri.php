@@ -162,7 +162,7 @@ function getDomain($id) {
 }
 
 function goForRedirect($params, $ref) {
-  if ($GLOBALS['TSFE']->config['config']['tx_cooluri_enable']==1 && $GLOBALS['TSFE']->config['config']['redirectOldLinksToNew']==1 && $GLOBALS['TSFE']->siteScript && (substr($GLOBALS['TSFE']->siteScript,0,9)=='index.php' || substr($GLOBALS['TSFE']->siteScript,0,1)=='?')) {
+  if (empty($_GET['ADMCMD_prev']) && $GLOBALS['TSFE']->config['config']['tx_cooluri_enable']==1 && $GLOBALS['TSFE']->config['config']['redirectOldLinksToNew']==1 && $GLOBALS['TSFE']->siteScript && (substr($GLOBALS['TSFE']->siteScript,0,9)=='index.php' || substr($GLOBALS['TSFE']->siteScript,0,1)=='?')) {
     
     $ss = explode('?',$GLOBALS['TSFE']->siteScript);
     if ($ss[1]) $pars = Link_Func::convertQuerystringToArray($ss[1]);
@@ -248,6 +248,8 @@ function getPageTitleBE($conf,$value) {
     
     if (!empty($conf->sanitize) && $conf->sanitize==1) {
       $pagepath[] = Link_Func::sanitize_title_with_dashes($title);
+    } elseif (!empty($conf->t3conv) && $conf->t3conv==1) {
+      $pagepath[] = Link_Func::specCharsToASCII($val);
     } elseif (!isset($conf->urlize) || $conf->urlize!=0) {
       $pagepath[] = Link_Func::URLize($title);
     } else {
@@ -316,6 +318,8 @@ function getPageTitle($conf,$value) {
     
     if (!empty($conf->sanitize) && $conf->sanitize==1) {
       $pagepath[] = Link_Func::sanitize_title_with_dashes($title);
+    } elseif (!empty($conf->t3conv) && $conf->t3conv==1) {
+      $pagepath[] = Link_Func::specCharsToASCII($title);
     } elseif (!isset($conf->urlize) || $conf->urlize!=0) {
       $pagepath[] = Link_Func::URLize($title);
     } else {

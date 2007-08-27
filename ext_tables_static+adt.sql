@@ -13,7 +13,7 @@ CREATE TABLE `link_cache` (
   `sticky` tinyint(1) unsigned default 0,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `id` (`id`),
-  KEY `id_2` (`id`)
+  KEY `url` (`url`(255))
 ) ENGINE=MyISAM;
 
 
@@ -30,5 +30,5 @@ CREATE TABLE `link_oldlinks` (
   `tstamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `id` (`id`),
-  KEY `id_2` (`id`)
+  KEY `url` (`url`(255))
 ) ENGINE=MyISAM;

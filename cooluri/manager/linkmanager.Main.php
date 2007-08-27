@@ -37,6 +37,7 @@ class LinkManger_Main {
         case 'update': $content .= $this->update(); break;
         case 'delete': $content .= $this->delete(); break;
         case 'all': $content .= $this->all(); break;
+        case 'sticky': $content .= $this->sticky(); break;
         default: $content .= $this->welcome();
       }
     }
@@ -92,6 +93,25 @@ class LinkManger_Main {
           $c = '<div class="error"><p>The link hasn\'t been deleted because it doesn\'t exist (or maybe a DB error).</p></div>';
       } else {
         $c = '<div class="succes"><p>The link has been deleted.</p></div>';
+      }
+    }
+    $c .= $this->getBackLink();
+    return $c;
+  }
+  
+  public function sticky() {
+    if (empty($_GET['lid'])) $id = 0;
+    else $id = (int)$_GET['lid'];
+    
+    if (isset($_GET['old'])) $old = true;
+    else $old = false;
+    
+    if (!empty($id)) {
+      $q = $this->db->query('UPDATE '.$this->table.'cache SET sticky=not(sticky) WHERE id='.$id.' LIMIT 1');
+      if (!$q || $this->db->affected_rows()==0) {
+          $c = '<div class="error"><p>The sticky value hasn\'t been changed because the link doesn\'t exist (or maybe a DB error).</p></div>';
+      } else {
+        $c = '<div class="succes"><p>The sticky value has been changed.</p></div>';
       }
     }
     $c .= $this->getBackLink();
@@ -172,9 +192,10 @@ class LinkManger_Main {
           <td>'.$row['crdatetime'].'</td>
           <td>'.$row['tstamp'].'</td>
           <td>'.($row['sticky']?'YES':'NO').'</td>
-          <td><a href="'.$this->file.'?mod=link&amp;lid='.$row['id'].'"><img src="img/button_edit.gif" alt="Edit" title="Edit" /></a>
+          <td class="nowrap"><a href="'.$this->file.'?mod=link&amp;lid='.$row['id'].'"><img src="img/button_edit.gif" alt="Edit" title="Edit" /></a>
               <a href="'.$this->file.'?mod=update&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_refresh.gif" alt="Update" title="Update" /></a>
               <a href="'.$this->file.'?mod=delete&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_garbage.gif" alt="Delete" title="Delete" onclick="return confirm(\'Are you sure?\');" /></a>
+              <a href="'.$this->file.'?mod=sticky&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_sticky.gif" alt="Sticky on/off" title="Sticky on/off" /></a>
           </td>
         </tr>';
       }
@@ -221,7 +242,7 @@ class LinkManger_Main {
           <td class="left">'.$row['ourl'].'</td>
           <td class="left">'.$row['lurl'].'</td>
           <td>'.$row['tstamp'].'</td>
-          <td><a href="'.$this->file.'?mod=delete&amp;old&amp;lid='.$row['id'].'&amp;from=old:'.$let.'"><img src="img/button_garbage.gif" alt="Delete" title="Delete" onclick="return confirm(\'Are you sure?\');" /></a>
+          <td class="nowrap"><a href="'.$this->file.'?mod=delete&amp;old&amp;lid='.$row['id'].'&amp;from=old:'.$let.'"><img src="img/button_garbage.gif" alt="Delete" title="Delete" onclick="return confirm(\'Are you sure?\');" /></a>
           </td>
         </tr>';
       }
@@ -239,8 +260,8 @@ class LinkManger_Main {
   }
   
   public function welcome() {
-    $c = '<h1>Welcome to the CoolURIs\' project\'s LinkManager</h1>
-    <p>This manager is part of the CoolURIs project.</p>
+    $c = '<h1>Welcome to the CoolURIs\' LinkManager</h1>
+    <p>This manager is part of the URI Transformer project.</p>
     <dl>
       <dt>Author:</dt>
       <dd>Jan Bednařík</dd>
@@ -249,7 +270,7 @@ class LinkManger_Main {
       <dt>Author contact:</dt>
       <dd><a href="mailto:info@bednarik.org">info@bednarik.org</a></dd>
       <dt>Official website:</dt>
-      <dd>none yet</dd>
+      <dd><a href="http://uri.bednarik.org">http://uri.bednarik.org</a></dd>
     </dl>
     ';
     return $c;

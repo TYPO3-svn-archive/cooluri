@@ -46,3 +46,6 @@ fieldset input {
 fieldset input.check {
 	width: auto;
 }
+.nowrap {
+	white-space: nowrap;
+}
