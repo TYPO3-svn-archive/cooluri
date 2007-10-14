@@ -354,6 +354,8 @@ class Link_Translate {
       } // end !empty($uri) && empty($cachedparams)
 	    
       $temp =  empty($cachedparams)?$finaluriparts:$cachedparams;
+      $temp = array_map('urldecode',$temp);
+      
       self::$uri = $temp;
       $res = array_merge($_GET,$temp);
       if (!empty($lConf->savetranslationto)) {
@@ -641,8 +643,10 @@ class Link_Translate {
       }
   		
   		if (!empty($params)) {
-  			$params = '?'.http_build_query($params);
-  			$params = str_replace('&amp;','&',$params);
+  			//$params = '?'.http_build_query($params);
+  			foreach ($params as $k=>$v) $params[$k] = $k.'='.$v;
+  			$params = '?'.implode('&',$params);
+  			//$params = str_replace('&amp;','&',$params);
         if ($entityampersand) $params = str_replace('&','&amp;',$params);
   		}
   		

@@ -317,8 +317,8 @@ public static function seems_utf8($Str) { # by bmorel at ssi dot fr
 private static $cs = null;
 public static function specCharsToASCII($s)
 {
-	if (!self::$cs) {
-    if (!class_exists('t3lib_div')) return self::utf2ascii($s);
+  if (!self::$cs) {
+    if (!class_exists('t3lib_div')) return self::URLize($s);
     self::$cs = t3lib_div::makeInstance('t3lib_cs');
   }
 	$charset = $GLOBALS['TSFE']->metaCharset;

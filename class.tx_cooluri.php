@@ -210,20 +210,21 @@ function getPageTitleBE($conf,$value) {
   $sel = t3lib_div::trimExplode(',',$sel);
   
   $max = 15;
-  
+
   while ($max>0 && $id) {
-    
-    //$page = $GLOBALS['TSFE']->sys_page->getPage($id);
+    if (!is_numeric($id)){
+    	$id =  $GLOBALS['TSFE']->sys_page->getPageIdFromAlias($id);
+    }
     $q = $db->exec_SELECTquery('*','pages','uid='.$id.$enable);
     $page = $db->sql_fetch_assoc($q);
     
     $temp = $db->exec_SELECTquery('COUNT(*) as num','sys_template','pid='.$id.' AND root=1'.$enable);
     $count = $db->sql_fetch_assoc($temp);
+
     if ($count['num']>0 || $page['is_siteroot']==1) { return $pagepath; }
     
     if ($langId) {
       $q = $db->exec_SELECTquery('*','pages_language_overlay','pid='.$id.' AND sys_language_uid='.$langId.$enable);
-      echo mysql_error();
       $lo = $db->sql_fetch_assoc($q);
       if ($lo) {
         unset($lo['uid']);
@@ -249,7 +250,7 @@ function getPageTitleBE($conf,$value) {
     if (!empty($conf->sanitize) && $conf->sanitize==1) {
       $pagepath[] = Link_Func::sanitize_title_with_dashes($title);
     } elseif (!empty($conf->t3conv) && $conf->t3conv==1) {
-      $pagepath[] = Link_Func::specCharsToASCII($val);
+      $pagepath[] = Link_Func::specCharsToASCII($title);
     } elseif (!isset($conf->urlize) || $conf->urlize!=0) {
       $pagepath[] = Link_Func::URLize($title);
     } else {
@@ -263,7 +264,11 @@ function getPageTitleBE($conf,$value) {
 }
 
 function getPageTitle($conf,$value) {
-  if (!$GLOBALS['TSFE'] || !$GLOBALS['TSFE']->cObj) return tx_cooluri::getPageTitleBE($conf,$value);
+  return tx_cooluri::getPageTitleBE($conf,$value);
+  // this function doesn't work for pages with restricted access. However, the BE
+  // function should work everywhere
+  
+  /*
   $db = &$GLOBALS['TYPO3_DB'];
   
   if (empty($conf->alias)) $sel = (string)$conf->title;
@@ -286,6 +291,9 @@ function getPageTitle($conf,$value) {
   
   while ($max>0 && $id) {
     
+    if (!is_numeric($id)){
+    	$id =  $GLOBALS['TSFE']->sys_page->getPageIdFromAlias($id);
+    }
     $page = $GLOBALS['TSFE']->sys_page->getPage($id);
     
     $temp = $db->exec_SELECTquery('COUNT(*) as num','sys_template','pid='.$id.' AND root=1'.$GLOBALS['TSFE']->cObj->enableFields('sys_template'));
@@ -332,6 +340,7 @@ function getPageTitle($conf,$value) {
     if (!empty($conf->maxsegments) && count($pagepath)>=(int)$conf->maxsegments) $max = 0;
   }
   return $pagepath;
+  */
 }
 
 }
