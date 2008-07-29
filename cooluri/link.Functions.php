@@ -86,8 +86,20 @@ class Link_Func {
     return $a;
   }
   
-  public static function lookindb($sql,$param='',$conf) {
-    $sql = str_replace('$1',$param,(string)$sql);
+  private static $allparams = null;
+  private static function replaceParameterInSQL($match) {
+    $m = explode('=',$match[1]);
+    $param = isset(self::$allparams[$m[0]])?self::$allparams[$m[0]]:(isset($m[1])?$m[1]:'');
+    return $param;
+  }
+  
+  public static function lookindb($sql,$param='',$conf=null,$allparams=array()) {
+    self::$allparams = $allparams;
+    
+    $sql = str_replace('$1',Link_DB::escape($param),(string)$sql);
+    
+    $sql = preg_replace_callback('~\{([^}]+)\}~',array(self,'replaceParameterInSQL'),$sql);
+    
   	$db = Link_DB::getInstance();
   	$res = $db->query($sql);
   	if (mysql_error() || !$res) return $param;
@@ -137,7 +149,12 @@ class Link_Func {
   }
   
   public static function prepareforOutput($path,$lConf) {
-    if (empty($path)) return $path;
+    if (empty($path) || 
+        (!empty($lConf->cache->prefix) && $path==$lConf->cache->prefix) ||
+        (!empty($lConf->cache->suffix) && $path==$lConf->cache->suffix) 
+       ) {
+      return $path;
+    }
     if (!empty($lConf->removetrailingslash) && $lConf->removetrailingslash==1) {
       $path = self::removeSlash($path);
   	}
@@ -146,11 +163,25 @@ class Link_Func {
   	}
   	if (!empty($lConf->urlsuffix)) {
   		$path .= (string)$lConf->urlsuffix;
-  	}
+  	}            	
   	return $path;
   }
   
-  public static function redirect($path) {
+  public static function prepareforRedirect($path,$lConf) {
+    $path = self::prepareforOutput($path,$lConf);
+    /**
+  	 * this is a sort of nasty hook for Typo3 purpose and that I don't like much, 
+  	 * but I've got no time to make it better
+  	 * it does the thing that when it finds prefix ending with @ it assumes 
+  	 * it's a domain and transforms it into such
+  	 */
+    if (!empty($lConf->cache->prefix) && substr($lConf->cache->prefix,-1)=='@' && substr($path,0,strlen($lConf->cache->prefix))==$lConf->cache->prefix) {
+      $path = 'http://'.str_replace($lConf->cache->prefix,substr($lConf->cache->prefix,0,-1).'/',$path);
+    }
+    return $path;
+  }
+  
+  public static function redirect($path,$status=0) {
     $path = preg_replace('~^/~','',$path);
     if (dirname($_SERVER['PHP_SELF'])!='' && dirname($_SERVER['PHP_SELF'])!='/' && dirname($_SERVER['PHP_SELF'])!='\\') {
       $path = dirname($_SERVER['PHP_SELF']).'/'.$path;
@@ -159,7 +190,11 @@ class Link_Func {
     if (!preg_match('~^http://~',$path)) {
       $path = 'http://'.$_SERVER['HTTP_HOST'].'/'.$path;
     }
-    header('Location: '.$path);
+    if (!empty($status)) {
+      header('Location: '.$path,true,$status);
+    } else {
+      header('Location: '.$path);
+    }
   	exit;
   }
   
@@ -314,21 +349,35 @@ public static function seems_utf8($Str) { # by bmorel at ssi dot fr
 	}
 
 
-private static $cs = null;
-public static function specCharsToASCII($s)
-{
-  if (!self::$cs) {
-    if (!class_exists('t3lib_div')) return self::URLize($s);
-    self::$cs = t3lib_div::makeInstance('t3lib_cs');
-  }
-	$charset = $GLOBALS['TSFE']->metaCharset;
-	if ($charset == "") $charset = "utf-8";
-  $text = self::$cs->specCharsToASCII($charset, $s);
-  $text = str_replace('\'', '', $text);
-  $text = preg_replace('/\W+/', '-', $text);
-  $text = trim($text, '-');
-  $text = strtolower($text);
-  return $text;
+/**
+ * This function has been taken from RealUrl. If it doesn't work, don't blame me :)
+ */ 
+public static function specCharsToASCII($title) {
+    
+    if (empty($GLOBALS['TSFE']->csConvObj)) {
+      return self::URLize($title);
+    }
+    
+    // Fetch character set:
+    $charset = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] ? $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] : $GLOBALS['TSFE']->defaultCharSet;
+    
+    	// Convert to lowercase:
+    $processedTitle = $GLOBALS['TSFE']->csConvObj->conv_case($charset,$title,'toLower');
+    
+    	// Convert some special tokens to the space character:
+    $space = '-';
+    $processedTitle = preg_replace('/[ -+_]+/', $space, $processedTitle); // convert spaces
+    
+    	// Convert extended letters to ascii equivalents:
+    $processedTitle = $GLOBALS['TSFE']->csConvObj->specCharsToASCII($charset, $processedTitle);
+    
+    	// Strip the rest...:
+    $processedTitle = ereg_replace('[^a-zA-Z0-9\\'.$space.']', '', $processedTitle); // strip the rest
+    $processedTitle = ereg_replace('\\'.$space.'+',$space,$processedTitle); // Convert multiple 'spaces' to a single one
+    $processedTitle = trim($processedTitle,$space);
+
+		// Return encoded URL:
+	  return rawurlencode($processedTitle);
 }	
 
 public static function prepareLinkForCache($path,$lConf) {
@@ -345,30 +394,45 @@ public static function prepareLinkForCache($path,$lConf) {
   
 }
 
-private static $sonderzeichen = array( 
-        'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
-        'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue',
-        'è' => 'e' , 'é' => 'e', 'ê' => 'e',
-         'à' => 'a', 'â' => 'a',
-         'ù' => 'u', 'û' => 'u',
-         'î' => 'i',
-         'ô' => 'o',
-         '¥' => 'Y', 'µ' => 'u', 'À' => 'A', 'Á' => 'A',
-'Â' => 'A', 'Ã' => 'A', 'Å' => 'A',
-'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
-'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I',
-'Î' => 'I', 'Ï' => 'I', 'Ð' => 'D', 'Ñ' => 'N',
-'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O',
-'Ø' => 'O', 'Ù' => 'U', 'Ú' => 'U',
-'Û' => 'U', 'Ý' => 'Y',
-'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a',
-'å' => 'a', 'æ' => 'a', 'ç' => 'c',
-'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e',
-'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i',
-'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o',
-'ô' => 'o', 'õ' => 'o', 'ø' => 'o',
-'ù' => 'u', 'ú' => 'u', 'û' => 'u',
-'ý' => 'y', 'ÿ' => 'y'
+private static $sonderzeichen = array(
+    'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
+    'Ä' => 'ae', 'Ö' => 'oe', 'Ü' => 'ue',
+    'è' => 'e' , 'é' => 'e', 'ê' => 'e',
+    'à' => 'a', 'â' => 'a',
+    'ù' => 'u', 'û' => 'u',
+    'î' => 'i',
+    'ô' => 'o',
+    '¥' => 'Y', 'µ' => 'u', 'À' => 'A', 'Á' => 'A',
+    'Â' => 'A', 'Ã' => 'A', 'Å' => 'A',
+    'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
+    'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I',
+    'Î' => 'I', 'Ï' => 'I', 'Ð' => 'D', 'Ñ' => 'N',
+    'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O',
+    'Ø' => 'O', 'Ù' => 'U', 'Ú' => 'U',
+    'Û' => 'U', 'Ý' => 'Y',
+    'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a',
+    'å' => 'a', 'æ' => 'a', 'ç' => 'c',
+    'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e',
+    'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i',
+    'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o',
+    'ô' => 'o', 'õ' => 'o', 'ø' => 'o',
+    'ù' => 'u', 'ú' => 'u', 'û' => 'u',
+    'ý' => 'y', 'ÿ' => 'y', 'А' => 'A', 'Б' => 'B', 
+    'В' => 'V', 'Г' => 'G', 'Д' => 'D', 'Ѓ' => 'Gj', 
+    'Е' => 'E', 'Ж' => 'Zz', 'З' => 'Z', 'Ѕ' => 'Dz', 
+    'И' => 'I', 'Ј' => 'J', 'К' => 'K', 'Л' => 'L', 
+    'Љ' => 'Lj', 'М' => 'M', 'Н' => 'N', 'Њ' => 'Nj', 
+    'О' => 'O', 'П' => 'P', 'Р' => 'R', 'С' => 'S', 
+    'Т' => 'T', 'Ќ' => 'Kj', 'У' => 'U', 'Ф' => 'F', 
+    'Х' => 'H', 'Ц' => 'C', 'Ч' => 'Ch', 'Џ' => 'Dzh', 
+    'Ш' => 'Sh', 'а' => 'a', 'б' => 'b', 'в' => 'v', 
+    'г' => 'g', 'д' => 'd', 'ѓ' => 'gj', 'е' => 'e', 
+    'ж' => 'zh', 'з' => 'z', 'ѕ' => 'dz', 'и' => 'i', 
+    'ј' => 'j', 'к' => 'k', 'л' => 'l', 'љ' => 'lj', 
+    'м' => 'm', 'н' => 'n', 'њ' => 'nj', 'о' => 'o', 
+    'п' => 'p', 'р' => 'r', 'с' => 's', 'т' => 't', 
+    'ќ' => 'kj', 'у' => 'u', 'ф' => 'f', 'х' => 'h', 
+    'ц' => 'c', 'ч' => 'ch', 'џ' => 'dzh', 'ш' => 'sh'
        );
 
 public static function remove_accents($string) { 

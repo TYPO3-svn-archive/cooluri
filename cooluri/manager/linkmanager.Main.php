@@ -38,6 +38,7 @@ class LinkManger_Main {
         case 'delete': $content .= $this->delete(); break;
         case 'all': $content .= $this->all(); break;
         case 'sticky': $content .= $this->sticky(); break;
+        case 'redirect': $content .= $this->redirect(); break;
         default: $content .= $this->welcome();
       }
     }
@@ -127,9 +128,18 @@ class LinkManger_Main {
       $q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE id='.$id);
       $oldlink = $this->db->fetch($q);
       if ($oldlink) {
-        
+                
         $params = Link_Func::cache2params($oldlink['params']);
         Link_Translate::params2cool($params,'',true,false,true);
+        
+        // multidomain option - it's a Typo3 hack, but what the heck
+        // it may be used even without Typo3
+        $md = explode('@',$oldlink['url']);
+        if (count($md)>1) {
+          // now it's required to add the prefix back
+          // domain change won't be supported           
+          $q = $this->db->query('UPDATE '.$this->table.'cache set url=CONCAT(\''.$md[0].'\',\'@\',url) WHERE id='.$id);
+        }
         
         $q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE id='.$id);
         $newlink = $this->db->fetch($q);
@@ -370,9 +380,48 @@ class LinkManger_Main {
     return $c;
   }
   
+    
+  public function redirect() {
+    
+    $c = '<h1>Set new redirect</h1>';
+    
+    if (!empty($_POST)) {
+      $id = (int)$_POST['to'];
+      if (empty($id) || empty($_POST['url'])) {
+        $c .= '<div class="error"><p>All fields are required.</p></div>'; 
+      } else {
+        $this->db->query('INSERT INTO '.$this->table.'oldlinks(link_id,url) 
+                                        VALUES('.$id.',
+                                        \''.$this->db->escape($_POST['url']).'\')');
+        $c .= '<div class="succes"><p>The redirect was saved successfully.</p></div>';
+      }
+    }
+    
+    $allq = $this->db->query('SELECT * FROM '.$this->table.'cache ORDER BY url');
+    
+    $c .= '<form method="post" action="'.$this->file.'?mod=redirect">
+    <fieldset>
+    <legend>Redirect details</legend>
+    <label for="url">From:</label><br />
+    <input type="text" name="url" id="url" /><br />
+    <label for="to">To:</label><br />
+    <select name="to" id="to">
+    ';
+    while ($row = $this->db->fetch($allq)) {
+      $c .= '<option value="'.$row['id'].'">'.$row['url'].'</option>
+      ';
+    }
+    $c .= '</select>
+    </fieldset>
+    <input type="submit" value="Submit this redirect" class="submit" />
+    </form>
+    ';
+    return $c; 
+  }
+  
   public function menu() {
     if ($this->enable)
-      $mods = Array(''=>'Home','cache'=>'Cached links','old'=>'Old links','link'=>'New link','all'=>'Delete/Update all');
+      $mods = Array(''=>'Home','cache'=>'Cached links','old'=>'Old links','link'=>'New link','redirect'=>'New redirect','all'=>'Delete/Update all');
     else 
       $mods = Array(''=>'Home');
     $cm = '';

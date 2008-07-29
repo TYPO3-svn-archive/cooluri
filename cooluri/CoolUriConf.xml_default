@@ -1,28 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cooluri>
-  <cooluris>1</cooluris>
-  
+ 
   <cache>
-    <usecache>1</usecache>
+    <usecache>1</usecache><!-- READONLY -->
     <params2cool>
+      <!-- how often (in days) should be links updated (Typo3 cache needs to be cleared) -->
       <checkforchangeevery>1</checkforchangeevery>
     </params2cool>
     <cool2params>
-      <translateifnotfound>0</translateifnotfound>
+      <!-- how many days should old links (those that are redirected to existing) should be kept active -->
       <oldlinksvalidfor>365</oldlinksvalidfor>
     </cool2params>
-    <cacheparams>0</cacheparams>
     
     <pagenotfound>
+      <!-- the status has to meet HTTP protocol header -->
       <status>HTTP/1.0 404 Not Found</status>
       <behavior type="message"><![CDATA[ <h1>Page not found!</h1> ]]></behavior>
+      <!-- possible @type values: 
+        page - will show a file (loaded using file_get_contents)
+        redirect - will redirect to a certaing URL
+        message - will output a message
+      -->
     </pagenotfound>
   </cache>
 
   <pagepath>
+    <!-- first non-empty value will be used -->
     <title>tx_realurl_pathsegment,alias,subtitle,title</title>
-    <saveto>id</saveto>
-    <default>0</default>    
+    
+    <saveto>id</saveto><!-- READONLY -->
+    <default>0</default><!-- READONLY -->
+    
     <userfunc>tx_cooluri->getPageTitle</userfunc>
     <t3conv>1</t3conv>
   </pagepath>
@@ -32,9 +40,8 @@
       <parameter>tx_ttnews[tt_news]</parameter>
       <lookindb>
         <to>SELECT title FROM tt_news WHERE uid=$1</to>
-        <translatetoif>
-          <match>^[0-9]+$</match>
-        </translatetoif>
+        <!-- if you have news items in different languages in one folder, use this sql -->
+        <!-- to>SELECT title FROM tt_news WHERE (uid=$1 or l18n_parent=$1) AND sys_language_uid={L=0}</to -->
         <t3conv>1</t3conv>
       </lookindb>
     </part>
@@ -42,42 +49,77 @@
       <parameter>tx_eeblog[showUid]</parameter>
       <lookindb>
         <to>SELECT subject FROM tx_eeblog_maintable WHERE uid=$1</to>
-        <translatetoif>
-          <match>^[0-9]+$</match>
-        </translatetoif>
+        <t3conv>1</t3conv>
+      </lookindb>
+    </part>
+    <!-- you can move cHash to predefineparts to remove in from URL
+         but first read the manual -->
+    <part>
+      <parameter>cHash</parameter>
+    </part>
+    
+    <!-- common patterns -->
+    
+    <!-- this will just add this parameter value to URL -->
+    <part>
+      <parameter>paramA</parameter>
+    </part>
+    <!-- this will look up parameter value in the database table "sometable" and if found
+          the value will be transformed using Typo3 csconv into URL-like value. 
+        You can make all sorts of MySQL stuff here, such as add UID into the result:
+        SELECT CONCAT(title,'-',uid) FROM ...
+    -->
+    <part>
+      <parameter>paramB</parameter>
+      <lookindb>
+        <to>SELECT title FROM sometable WHERE uid=$1</to>
         <t3conv>1</t3conv>
       </lookindb>
     </part>
   </uriparts>
-    
+  
   <predefinedparts>
     <part>
-      <parameter>tx_ttnews[backPid]</parameter>
-    </part>
-    <part>
-      <parameter>cHash</parameter>
-    </part>
-    <part>
-      <parameter>tx_eeblog[pointer]</parameter>
-    </part>
-    <part>
-      <parameter>tx_eeblog[backPID]</parameter>
-    </part>
-    <part>
       <parameter>no_cache</parameter>
+    </part>
+    
+    <!-- common patterns -->
+    
+    <!-- parts defined this way will be removed from URL -->
+    <part>
+      <parameter>paramC</parameter>
+    </part>
+    <!-- this will prefix a value with "prefix-". Cannot be localized.
+    -->
+    <part key="prefix-(.*)" regexp="1">
+      <parameter>paramD</parameter>
+    </part>
+    <!-- if parameter matches value, key will be added to URL 
+         with mutliple values, use valuemaps
+    -->
+    <part key="thisWillAppearInUrl">
+      <parameter>paramE</parameter>
+      <value>ifParamEMatcesThisValue</value>
     </part>
   </predefinedparts>
   
   <valuemaps>
     <valuemap>
       <parameter>L</parameter>
+      <!-- L is empty of 0, result is empty -->
       <value key="">0</value>
+      <!-- L is 1, result is "en" -->
       <value key="en">1</value>
     </valuemap>
   </valuemaps>
   
+  <!-- this will put L param to the first position
+      for more magic see manual -->
   <paramorder>
     <param>L</param>
   </paramorder>
+  
+<!-- READONLY START -->
+<cooluris>1</cooluris>
   
 </cooluri>

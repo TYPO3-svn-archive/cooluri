@@ -116,12 +116,13 @@ class  tx_cooluri_module1 extends t3lib_SCbase {
             }*/
             
             $this->confArray = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['cooluri']);
-            if (file_exists($BACK_PATH.'../'.$this->confArray['XMLPATH'].'CoolUriConf.xml'))
-              $lt = $BACK_PATH.'../'.$this->confArray['XMLPATH'].'CoolUriConf.xml';
+            $bp = str_replace('typo3/','',$BACK_PATH);
+            if (file_exists($bp.$this->confArray['XMLPATH'].'CoolUriConf.xml'))
+              $lt = $bp.$this->confArray['XMLPATH'].'CoolUriConf.xml';
             elseif (file_exists(PATH_typo3conf.'CoolUriConf.xml'))
               $lt = PATH_typo3conf.'CoolUriConf.xml';
             elseif (file_exists(dirname(__FILE__).'/../cooluri/CoolUriConf.xml'))
-              $lt = dirname(__FILE__).'/cooluri/CoolUriConf.xml';
+              $lt = dirname(__FILE__).'/../cooluri/CoolUriConf.xml';
             else {
               $this->content .= 'XML Config file not found';
               return;

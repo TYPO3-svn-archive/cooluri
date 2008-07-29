@@ -122,6 +122,7 @@
         <xs:element ref="valuemaps"         minOccurs="0"/>
         <xs:element name="removetrailingslash" type="boolean" minOccurs="0"/>
         <xs:element ref="paramorder" minOccurs="0"/>
+        <xs:element ref="partorder" minOccurs="0"/>
       </xs:all>
     </xs:complexType>
   </xs:element>
@@ -182,6 +183,14 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="param" type="xs:token" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="partorder">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="part" type="xs:token" maxOccurs="unbounded" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

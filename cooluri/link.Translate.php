@@ -54,7 +54,7 @@ class Link_Translate {
         }
         // if something was stripped (and something is still left, redirect is needed)
         if (!empty($lConf->removeparts['redirect']) && $lConf->removeparts['redirect']==1)
-          if (!empty($uri) && $uri!=$originaluri) Link_Func::redirect(Link_Func::prepareforOutput($uri,$lConf));
+          if (!empty($uri) && $uri!=$originaluri) Link_Func::redirect(Link_Func::prepareforRedirect($uri,$lConf));
       }
       $temp = explode('?',$uri);
       if (!empty($lConf->urlsuffix)) {
@@ -93,12 +93,12 @@ class Link_Translate {
   				$tempurix = $tempuri[0];
   			}
   			
-        $q = $db->query('SELECT * FROM '.$tp.'cache WHERE url=\''.$xuri.'\' OR url=\''.$tempurix.'\'');
+        $q = $db->query('SELECT * FROM '.$tp.'cache WHERE url=\''.$db->escape($xuri).'\' OR url=\''.$db->escape($tempurix).'\'');
   			
   			$row = $db->fetch($q);
   			if ($row) {
   				if ($row['url']!=$xuri) { // we've got our $tempuri, not $url -> let's redirect
-            Link_Func::redirect(Link_Func::prepareforOutput($row['url'].(empty($tempuri[1])?'':'?'.$tempuri[1]),$lConf));
+            Link_Func::redirect(Link_Func::prepareforRedirect($row['url'].(empty($tempuri[1])?'':'?'.$tempuri[1]),$lConf));
   				} else {
   					$cachedparams = Link_Func::cache2params($row['params']);
   				}
@@ -106,10 +106,10 @@ class Link_Translate {
   				$vf = '';
   				if (isset($lConf->cache->cool2params->oldlinksvalidfor))
   					$vf = ' AND DATEDIFF(NOW(),'.$tp.'oldlinks.tstamp)<'.(string)$lConf->cache->cool2params->oldlinksvalidfor;
-  				$q = $db->query('SELECT '.$tp.'cache.url AS oldlink FROM '.$tp.'oldlinks  LEFT JOIN '.$tp.'cache ON '.$tp.'oldlinks.link_id='.$tp.'cache.id WHERE ('.$tp.'oldlinks.url=\''.$xuri.'\' OR '.$tp.'oldlinks.url=\''.$tempurix.'\')'.$vf);
+  				$q = $db->query('SELECT '.$tp.'cache.url AS oldlink FROM '.$tp.'oldlinks  LEFT JOIN '.$tp.'cache ON '.$tp.'oldlinks.link_id='.$tp.'cache.id WHERE ('.$tp.'oldlinks.url=\''.$db->escape($xuri).'\' OR '.$tp.'oldlinks.url=\''.$db->escape($tempurix).'\')'.$vf);
   				$row = $db->fetch($q);
   				if ($row) {
-  					Link_Func::redirect(Link_Func::prepareforOutput($row['oldlink'].(empty($tempuri[1])?'':'?'.$tempuri[1]),$lConf));
+  					Link_Func::redirect(Link_Func::prepareforRedirect($row['oldlink'].(empty($tempuri[1])?'':'?'.$tempuri[1]),$lConf));
   				}			
   				elseif (empty($lConf->cache->cool2params->translateifnotfound) || $lConf->cache->cool2params->translateifnotfound!=1) {
   					Link_Func::pageNotFound($lConf);
@@ -250,7 +250,7 @@ class Link_Translate {
                       	if (isset($nottranslated[substr(trim($var),1)])) $proceed = false; // this var wasn't found in db b4, no need to try to translate
                         else {
                         	if (empty($finaluriparts[substr(trim($var),1)])) continue; // subst not found - query res would be empty
-                          else $sql = str_replace(trim($var),Link_DB::escape($finaluriparts[substr(trim($var),1)]),$sql);
+                          else $sql = str_replace(trim($var),$db->escape($finaluriparts[substr(trim($var),1)]),$sql);
                         }
                       }
                     }
@@ -273,9 +273,9 @@ class Link_Translate {
                 	if ($lastonthepath==null || !empty($finaluriparts[$lastonthepath])) {
 	                	$db = Link_DB::getInstance();
 	                	$sql = 'SELECT '.(string)$lConf->pagepath->id.' FROM '.(string)$lConf->pagepath->table;
-						$sql .= ' WHERE '.(string)$lConf->pagepath->alias.'=\''.$coolparts[$i].'\'';
+						$sql .= ' WHERE '.(string)$lConf->pagepath->alias.'=\''.$db->escape($coolparts[$i]).'\'';
 						if ($lastonthepath==null) $sql .= ' AND '.(string)$lConf->pagepath->start->param.'='.(string)$lConf->pagepath->start->value;
-						else $sql .= ' AND '.(string)$lConf->pagepath->connection.'='.$finaluriparts[$lastonthepath];
+						else $sql .= ' AND '.(string)$lConf->pagepath->connection.'='.$db->escape($finaluriparts[$lastonthepath]);
 						$res = $db->query($sql);
 						if (!$db->error() && $db->num_rows($res)>0) { // no match found - not translating
 	                      $row = $db->fetch_row($res);
@@ -382,9 +382,8 @@ class Link_Translate {
   }
   
   public function params2cool(array $params, $file = '', $entityampersand = true, $dontconvert = false, $forceUpdate = false) {
-  	$lConf = &self::$conf;
+    $lConf = &self::$conf;
   	if (!empty($lConf->cooluris) && $lConf->cooluris==1 && !$dontconvert) {
-  		
   		
   		// if cache is allowed, we'll look for an uri
   		if (!empty($lConf->cache) && !empty($lConf->cache->usecache) && $lConf->cache->usecache==1) {
@@ -414,7 +413,11 @@ class Link_Translate {
   					if (empty($lConf->cache->cacheparams) || $lConf->cache->cacheparams!=1) {
 	  					$qsp = Link_Func::array_diff_key($params,$originalparams);
 	  					if (!empty($qsp)) {
-	  						$qs = '?'.http_build_query($qsp);	
+	  						//$qs = '?'.http_build_query($qsp);	
+	  						foreach ($qsp as $k=>$v) $qsp[$k] = $k.'='.$v;
+          			$qs = '?'.implode('&',$qsp);
+          			//$params = str_replace('&amp;','&',$params);
+                //if ($entityampersand) $params = str_replace('&','&amp;',$params);
 	  					}
   					}
   					return Link_Func::prepareforOutput($row['url'],$lConf).$qs; // uri found in cache
@@ -433,9 +436,9 @@ class Link_Translate {
   				  if ($uf!==FALSE) {
               $predefparts[(string)$ppart->parameter] = $uf;
             } elseif (!empty($ppart['regexp']) && $ppart['regexp']==1) {
-  						$predefparts[(string)$ppart->parameter] = preg_replace('~\([^)]+\)~',empty($ppart->lookindb)?$params[(string)$ppart->parameter]:Link_Func::lookindb($ppart->lookindb->to,$params[(string)$ppart->parameter],$ppart->lookindb),$ppart['key']);
+  						$predefparts[(string)$ppart->parameter] = preg_replace('~\([^)]+\)~',empty($ppart->lookindb)?$params[(string)$ppart->parameter]:Link_Func::lookindb($ppart->lookindb->to,$params[(string)$ppart->parameter],$ppart->lookindb,$originalParams),$ppart['key']);
   					} elseif ($ppart->value==$params[(string)$ppart->parameter]) {
-  						$predefparts[(string)$ppart->parameter] = empty($ppart->lookindb)?(string)$ppart['key']:Link_Func::lookindb($ppart->lookindb->to,$params[(string)$ppart->parameter],$ppart->lookindb);
+  						$predefparts[(string)$ppart->parameter] = empty($ppart->lookindb)?(string)$ppart['key']:Link_Func::lookindb($ppart->lookindb->to,$params[(string)$ppart->parameter],$ppart->lookindb,$originalParams);
   					}
             unset($params[(string)$ppart->parameter]);
   				}
@@ -474,7 +477,7 @@ class Link_Translate {
   					else $sel = (string)$lConf->pagepath->alias;
             
             $sql = 'SELECT '.(string)$lConf->pagepath->connection.','.$sel.' 
-  							FROM '.(string)$lConf->pagepath->table.' WHERE '.(string)$lConf->pagepath->id.'='.($lastpid==null?$params[(string)$lConf->pagepath->saveto]:$lastpid);
+  							FROM '.(string)$lConf->pagepath->table.' WHERE '.(string)$lConf->pagepath->id.'='.$db->escape($lastpid==null?$params[(string)$lConf->pagepath->saveto]:$lastpid);
   					if (!empty($lConf->pagepath->additionalWhere)) {
               $sql .= ' '.(string)$lConf->pagepath->additionalWhere;
             }
@@ -521,7 +524,7 @@ class Link_Translate {
 				        if ($uf!==FALSE) {
 			  			   $translatedpagepath[(string)$pp->parameter] = $uf;
 			  			} else
-							$translatedpagepath[(string)$pp->parameter] = (empty($pp->lookindb)?$params[(string)$pp->parameter]:Link_Func::lookindb($pp->lookindb->to,$params[(string)$pp->parameter],$pp->lookindb));
+							$translatedpagepath[(string)$pp->parameter] = (empty($pp->lookindb)?$params[(string)$pp->parameter]:Link_Func::lookindb($pp->lookindb->to,$params[(string)$pp->parameter],$pp->lookindb,$originalParams));
 			       } elseif (!empty($pp['pagepath']) && $pp['pagepath']==1 && !empty($pagepath[$counter])) {
 						//if (!empty($pagepath[$counter])) {
 							$translatedpagepath[(string)$pp->parameter] = $pagepath[$counter];
@@ -644,7 +647,7 @@ class Link_Translate {
   		
   		if (!empty($params)) {
   			//$params = '?'.http_build_query($params);
-  			foreach ($params as $k=>$v) $params[$k] = $k.'='.$v;
+        foreach ($params as $k=>$v) $params[$k] = $k.'='.$v;
   			$params = '?'.implode('&',$params);
   			//$params = str_replace('&amp;','&',$params);
         if ($entityampersand) $params = str_replace('&','&amp;',$params);
@@ -667,27 +670,26 @@ class Link_Translate {
   			if (!empty($originalparams)) {
     			if (!empty($updatecacheid)) {
     				// first we will update the timestamp (so we will now, when the last uri check was)
-    				$db->query('UPDATE '.$tp.'cache SET tstamp=NOW() WHERE id='.$updatecacheid);
+    				$db->query('UPDATE '.$tp.'cache SET tstamp=NOW() WHERE id='.(int)$updatecacheid);
             if ($cacheduri!=$path.$p) {
     					// uri is changed, we need to move the old one to the old links
-    					$db->query('INSERT INTO '.$tp.'oldlinks(link_id,url) VALUES('.$updatecacheid.',\''.$cacheduri.'\')');
-    					$db->query('UPDATE '.$tp.'cache SET url=\''.$path.$p.'\' WHERE id='.$updatecacheid);
+    					$db->query('INSERT INTO '.$tp.'oldlinks(link_id,url) VALUES('.(int)$updatecacheid.',\''.$db->escape($cacheduri).'\')');
+    					$db->query('UPDATE '.$tp.'cache SET url=\''.$db->escape($path.$p).'\' WHERE id='.(int)$updatecacheid);
     					
     					// if the path has changed back, no need to store it in the oldlinks
     					// prevets from overflooding the DB when tampering with configuration
-    					$db->query('DELETE FROM '.$tp.'oldlinks WHERE url=\''.$path.$p.'\'');
+    					$db->query('DELETE FROM '.$tp.'oldlinks WHERE url=\''.$db->escape($path.$p).'\'');
     					
     				}
     			} else {
-    				$res = $db->query('SELECT * FROM '.$tp.'cache WHERE url=\''.$path.$p.'\'');
+    				$res = $db->query('SELECT * FROM '.$tp.'cache WHERE url=\''.$db->escape($path.$p).'\'');
     				if ($db->num_rows($res)==0)
-    					$db->query('INSERT INTO '.$tp.'cache(url,params,crdatetime) VALUES(\''.$path.$p.'\',\''.Link_Func::prepareParamsForCache($originalparams).'\',NOW())');
+    					$db->query('INSERT INTO '.$tp.'cache(url,params,crdatetime) VALUES(\''.$db->escape($path.$p).'\',\''.Link_Func::prepareParamsForCache($originalparams).'\',NOW())');
     			}
   			}
   		} 
   		
   		//if (!empty($params)) $path .= $params;
-  		
   		return Link_Func::prepareforOutput($path,$lConf).(empty($params)?'':$params);
   		
   	} else {
