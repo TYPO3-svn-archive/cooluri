@@ -23,7 +23,7 @@ $TCA['pages']['columns']['tx_cooluri_exclude'] = array(
 	)
 ); 
 
-t3lib_extMgm::addToAllTCAtypes('pages','tx_realurl_pathsegment', t3lib_div::compat_version('4.2') ? '1' : '2', 'after:nav_title');
-t3lib_extMgm::addToAllTCAtypes('pages','tx_cooluri_exclude', t3lib_div::compat_version('4.2') ? '1' : '2', 'after:nav_title');
+t3lib_extMgm::addToAllTCAtypes('pages','tx_realurl_pathsegment,tx_cooluri_exclude', (t3lib_div::compat_version('4.2') ? '1' : '2'), 'after:nav_title');
+t3lib_extMgm::addToAllTCAtypes('pages','tx_realurl_pathsegment,tx_cooluri_exclude', (t3lib_div::compat_version('4.2') ? '' : '1,5,') . '4,254', 'after:nav_title');
 
 ?>
