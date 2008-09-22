@@ -1,4 +1,20 @@
 <?php
+/**
+	This file is part of CoolUri.
+
+    CoolUri is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    CoolUri is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with CoolUri. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 class Link_Translate {
   
@@ -109,7 +125,7 @@ class Link_Translate {
   				$q = $db->query('SELECT '.$tp.'cache.url AS oldlink FROM '.$tp.'oldlinks  LEFT JOIN '.$tp.'cache ON '.$tp.'oldlinks.link_id='.$tp.'cache.id WHERE ('.$tp.'oldlinks.url=\''.$db->escape($xuri).'\' OR '.$tp.'oldlinks.url=\''.$db->escape($tempurix).'\')'.$vf);
   				$row = $db->fetch($q);
   				if ($row) {
-  					Link_Func::redirect(Link_Func::prepareforRedirect($row['oldlink'].(empty($tempuri[1])?'':'?'.$tempuri[1]),$lConf));
+  					Link_Func::redirect(Link_Func::prepareforRedirect($row['oldlink'].(empty($tempuri[1])?'':'?'.$tempuri[1]),$lConf),301);
   				}			
   				elseif (empty($lConf->cache->cool2params->translateifnotfound) || $lConf->cache->cool2params->translateifnotfound!=1) {
   					Link_Func::pageNotFound($lConf);
