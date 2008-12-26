@@ -243,7 +243,7 @@ class tx_cooluri {
   }
   
   function getDomain($id) {
-    if ($GLOBALS['TSFE']->showHiddenPage || self::isBEUserLoggedInI()) {
+    if ($GLOBALS['TSFE']->showHiddenPage || self::isBEUserLoggedIn()) {
       $enable = ' AND pages.deleted=0';
       $enable2 = ' AND deleted=0';
     } else {
@@ -383,8 +383,9 @@ class tx_cooluri {
       }
       
       foreach ($sel as $s) {
-        if (!empty($page[$s])) {
-          $title = $page[$s];
+        $trimmed = trim($page[$s]);
+        if (!empty($trimmed)) {
+          $title = $trimmed;
           break;
         }
       }

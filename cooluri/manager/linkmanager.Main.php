@@ -82,7 +82,7 @@ class LinkManger_Main {
       <h2>Start againg</h2>
       <p>Delete everything - cache and oldlinks.</p>
       <form method="post" action="'.$this->file.'?mod=all">
-        <input type="submit" name="delete" value="DELETE EVERYTHING AND START AGAING" />
+        <input type="submit" name="delete" value="DELETE EVERYTHING AND START AGAIN" />
       </form>
     ';
     return $c;
@@ -388,7 +388,7 @@ class LinkManger_Main {
     <label for="params">Parameters (query string: id=1&amp;type=2):</label><br />
     <input type="text" name="params" id="params" value="'.(empty($data['params'])?'':htmlspecialchars($data['params'])).'" /><br />
     <label for="sticky">Sticky (won\'t be updated):</label><br />
-    <input type="checkbox" class="check" name="sticky" id="sticky" value="1" '.(empty($data['sticky'])?'':' checked="checked"').'" />
+    <input type="checkbox" class="check" name="sticky" id="sticky" value="1" '.(empty($data['sticky'])?'':' checked="checked"').' />
     </fieldset>
     <input type="submit" value=" '.($new?'Save new URI':'Update this URI').' " class="submit" />
     </form>
