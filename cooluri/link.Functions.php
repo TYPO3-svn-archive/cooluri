@@ -207,12 +207,12 @@ class Link_Func {
   
   public static function redirect($path,$status=0) {
     $path = preg_replace('~^/~','',$path);
-    if (dirname($_SERVER['PHP_SELF'])!='' && dirname($_SERVER['PHP_SELF'])!='/' && dirname($_SERVER['PHP_SELF'])!='\\') {
-      $path = dirname($_SERVER['PHP_SELF']).'/'.$path;
-    }
-    $path = preg_replace('~^/~','',$path);
     if (!preg_match('~^http://~',$path)) {
-      $path = 'http://'.$_SERVER['HTTP_HOST'].'/'.$path;
+	    if (dirname($_SERVER['PHP_SELF'])!='' && dirname($_SERVER['PHP_SELF'])!='/' && dirname($_SERVER['PHP_SELF'])!='\\') {
+	      $path = dirname($_SERVER['PHP_SELF']).'/'.$path;
+	    }
+	    $path = preg_replace('~^/~','',$path);
+	    $path = 'http://'.$_SERVER['HTTP_HOST'].'/'.$path;
     }
     if (!empty($status)) {
       header('Location: '.$path,true,$status);
