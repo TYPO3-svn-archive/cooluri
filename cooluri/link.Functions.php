@@ -112,7 +112,15 @@ class Link_Func {
   public static function lookindb($sql,$param='',$conf=null,$allparams=array()) {
     self::$allparams = $allparams;
     
-    $sql = str_replace('$1',Link_DB::escape($param),(string)$sql);
+    $param = Link_DB::escape($param);
+    $intparam = (int)$param;
+    
+    if (($intparam.'')!=($param.'')) {
+    	// not a number
+    	$param = '\''.$param.'\'';
+    }
+    
+    $sql = str_replace('$1',$param,(string)$sql);
     
     $sql = preg_replace_callback('~\{([^}]+)\}~',array(self,'replaceParameterInSQL'),$sql);
     
