@@ -182,10 +182,11 @@ class LinkManger_Main {
   
   public function cache() {
     
-    if (empty($_GET['l']))
-      $let = '%';
-    else
+    if (empty($_GET['l'])) {
+      $let = '';
+    } else {
       $let = $this->db->escape($_GET['l']);
+    }
     
     $c = '<h1>Cached links</h1>';
     
@@ -202,32 +203,44 @@ class LinkManger_Main {
       Link starts with: <input type="text" name="l" class="a" value="'.htmlspecialchars($let).'" />
       <input type="hidden" name="mod" value="cache" />
       <input type="submit" value="Search" class="submit" />
+      <label>Ignore domain: <input type="checkbox" name="domain" value="1" '.(!empty($_GET['domain'])?' checked="checked"':'').'/></label>
     </p>
     </form>';
     
-    $q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE url LIKE \''.strtolower($let).'%\' OR url LIKE \''.strtoupper($let).'%\' ORDER BY url');
-    $num = $this->db->num_rows($q);
-    if ($num>0) {
-      $c .= '<p class="center">Records found: '.$num.'</p>';
-      $c .= '<form method="post" action="'.$this->file.'?mod=cache">';
-      $c .= '<table id="list"><tr><th class="left">Cached URI</th><th>Parameters</th><th>Cached</th><th>Last check</th><th>Sticky</th><th>Action</th>';
-      while ($row = $this->db->fetch($q)) {
-        $c .= '<tr>
-          <td class="left">'.$row['url'].'</td>
-          <td>'.$this->serializedArrayToQueryString($row['params']).'</td>
-          <td>'.$row['crdatetime'].'</td>
-          <td>'.$row['tstamp'].'</td>
-          <td>'.($row['sticky']?'YES':'NO').'</td>
-          <td class="nowrap"><a href="'.$this->file.'?mod=link&amp;lid='.$row['id'].'"><img src="img/button_edit.gif" alt="Edit" title="Edit" /></a>
-              <a href="'.$this->file.'?mod=update&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_refresh.gif" alt="Update" title="Update" /></a>
-              <a href="'.$this->file.'?mod=delete&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_garbage.gif" alt="Delete" title="Delete" onclick="return confirm(\'Are you sure?\');" /></a>
-              <a href="'.$this->file.'?mod=sticky&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_sticky.gif" alt="Sticky on/off" title="Sticky on/off" /></a>
-          </td>
-        </tr>';
-      }
-      $c .= '</table></form>';
+    if (!empty($let)) {
+    	
+    	if (!empty($_GET['domain'])) {
+    		$let = str_replace('%','.*',$let);
+    		$q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE url RLIKE \'^[^@]*@?'.strtolower($let).'.*\' OR url RLIKE \'^[^@]*@?'.strtoupper($let).'.*\' ORDER BY url');
+    	} else {
+    		$q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE url LIKE \''.strtolower($let).'%\' OR url LIKE \''.strtoupper($let).'%\' ORDER BY url');	
+    	}
+	    $num = $this->db->num_rows($q);
+	    if ($num>0) {
+	      $c .= '<p class="center">Records found: '.$num.'</p>';
+	      $c .= '<form method="post" action="'.$this->file.'?mod=cache">';
+	      $c .= '<table id="list"><tr><th class="left">Cached URI</th><th>Parameters</th><th>Cached</th><th>Last check</th><th>Sticky</th><th>Action</th>';
+	      while ($row = $this->db->fetch($q)) {
+	        $c .= '<tr>
+	          <td class="left">'.$row['url'].'</td>
+	          <td>'.$this->serializedArrayToQueryString($row['params']).'</td>
+	          <td>'.$row['crdatetime'].'</td>
+	          <td>'.$row['tstamp'].'</td>
+	          <td>'.($row['sticky']?'YES':'NO').'</td>
+	          <td class="nowrap"><a href="'.$this->file.'?mod=link&amp;lid='.$row['id'].'"><img src="img/button_edit.gif" alt="Edit" title="Edit" /></a>
+	              <a href="'.$this->file.'?mod=update&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_refresh.gif" alt="Update" title="Update" /></a>
+	              <a href="'.$this->file.'?mod=delete&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_garbage.gif" alt="Delete" title="Delete" onclick="return confirm(\'Are you sure?\');" /></a>
+	              <a href="'.$this->file.'?mod=sticky&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_sticky.gif" alt="Sticky on/off" title="Sticky on/off" /></a>
+	          </td>
+	        </tr>';
+	      }
+	      $c .= '</table></form>';
+	    } else {
+	      $c .= '<p>No cached links found.</p>';
+	    }
+    
     } else {
-      $c .= '<p>No cached links found.</p>';
+    	$c .= '<p>Input any filter. Use "%" to get all links.';
     }
     return $c;
   }
