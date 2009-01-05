@@ -35,7 +35,7 @@ class tx_cooluri {
    * editing the conf file, so they need to see the changes immediately   
    */ 
   function getTranslateInstance() {
-    if (!empty($_SESSION['coolUriTransformerInstance']) && !self::isBEUserLoggedIn()) {
+  	if (!empty($_SESSION['coolUriTransformerInstance']) && !empty($_SESSION['coolUriTransformerInstance']->conf) && !self::isBEUserLoggedIn()) {
       return $_SESSION['coolUriTransformerInstance'];
     }
     
@@ -49,7 +49,7 @@ class tx_cooluri {
     else return false;
     
     if (!self::isBEUserLoggedIn()) {
-      $_SESSION['coolUriTransformerInstance'] = $lt;
+      $_SESSION['coolUriTransformerInstance'] = @clone($lt);
     }
     return $lt;
   }
