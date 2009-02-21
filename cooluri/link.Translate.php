@@ -113,7 +113,7 @@ class Link_Translate {
   			
   			$row = $db->fetch($q);
   			if ($row) {
-          		if ($row['url']!=$xuri) { // we've got our $tempuri, not $url -> let's redirect
+          		if (!strcmp($row['url'],$xuri)) { // we've got our $tempuri, not $url -> let's redirect
             		Link_Func::redirect(Link_Func::prepareforRedirect($row['url'].(empty($tempuri[1])?'':'?'.$tempuri[1]),$lConf));
   				} else {
   					$cachedparams = Link_Func::cache2params($row['params']);
@@ -400,7 +400,6 @@ class Link_Translate {
   public function params2cool(array $params, $file = '', $entityampersand = true, $dontconvert = false, $forceUpdate = false) {
     $lConf = &self::$conf;
   	if (!empty($lConf->cooluris) && $lConf->cooluris==1 && !$dontconvert) {
-  		
   		// if cache is allowed, we'll look for an uri
   		if (!empty($lConf->cache) && !empty($lConf->cache->usecache) && $lConf->cache->usecache==1) {
   			$tp = Link_Func::getTablesPrefix($lConf);
@@ -416,14 +415,13 @@ class Link_Translate {
   			}
   			
   			$q = $db->query('SELECT *, DATEDIFF(NOW(),tstamp) AS daydiff FROM '.$tp.'cache WHERE params=\''.Link_Func::prepareParamsForCache($originalparams,$tp).'\'');
-        $row = $db->fetch($q);
+        	$row = $db->fetch($q);
   			if ($row) {
-
     			if ($row['daydiff']==NULL) $row['daydiff'] = 2147483647; // daydiff isn't set, we force new check
 
   				if (($row['daydiff']>=$checkfornew && $row['sticky']==0) || $forceUpdate) {
   					$updatecacheid = $row['id'];
-            $cacheduri = $row['url'];
+            		$cacheduri = $row['url'];
   				} else {
   					$qs = '';
   					if (empty($lConf->cache->cacheparams) || $lConf->cache->cacheparams!=1) {
@@ -431,9 +429,9 @@ class Link_Translate {
 	  					if (!empty($qsp)) {
 	  						//$qs = '?'.http_build_query($qsp);	
 	  						foreach ($qsp as $k=>$v) $qsp[$k] = $k.'='.$v;
-          			$qs = '?'.implode('&',$qsp);
-          			//$params = str_replace('&amp;','&',$params);
-                //if ($entityampersand) $params = str_replace('&','&amp;',$params);
+		          			$qs = '?'.implode('&',$qsp);
+		          			//$params = str_replace('&amp;','&',$params);
+		                	//if ($entityampersand) $params = str_replace('&','&amp;',$params);
 	  					}
   					}
   					return Link_Func::prepareforOutput($row['url'],$lConf).$qs; // uri found in cache
