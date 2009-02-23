@@ -113,7 +113,7 @@ class Link_Translate {
   			
   			$row = $db->fetch($q);
   			if ($row) {
-          		if (!strcmp($row['url'],$xuri)) { // we've got our $tempuri, not $url -> let's redirect
+  				if (strcmp($row['url'],$xuri)!==0) { // we've got our $tempuri, not $url -> let's redirect
             		Link_Func::redirect(Link_Func::prepareforRedirect($row['url'].(empty($tempuri[1])?'':'?'.$tempuri[1]),$lConf));
   				} else {
   					$cachedparams = Link_Func::cache2params($row['params']);
