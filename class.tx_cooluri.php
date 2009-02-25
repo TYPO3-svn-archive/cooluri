@@ -419,14 +419,12 @@ class tx_cooluri {
   }
   
   function extractArraysFromParams($params) {
-    $params = (array)$params;
-    foreach ($params as $k=>$v) {
-      if (preg_match('~^(.+)\[([^\]]+)\]$~',$k,$matches)) {
-        $params[$matches[1]][$matches[2]] = $v;
-        unset($params[$k]);
-      }
-    }
-    return $params;
+  	// turn array back into query string
+  	// so it can be used with parse_str
+  	foreach ($params as $k=>$v) $params[$k] = $k.'='.$v;
+	$qs = implode('&',$params);
+  	parse_str($qs,$output);
+  	return $output;
   }
   
   public static function isBEUserLoggedIn() {
