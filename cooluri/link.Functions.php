@@ -173,22 +173,41 @@ class Link_Func {
   }
   
   public static function prepareforOutput($path,$lConf) {
-    if (empty($path) || 
+    // path is empty or equal to suffix/prefix
+    // so there won't be any suffix or prefix
+    // just empty URL (root)
+  	if (empty($path) || 
         (!empty($lConf->cache->prefix) && $path==$lConf->cache->prefix) ||
         (!empty($lConf->cache->suffix) && $path==$lConf->cache->suffix) 
        ) {
       return $path;
     }
-    if (!empty($lConf->removetrailingslash) && $lConf->removetrailingslash==1) {
-      $path = self::removeSlash($path);
+  	if (!empty($lConf->removetrailingslash) && $lConf->removetrailingslash==1) {
+  		$temppath = self::removeSlash($path);
+  		$el = $lConf->removetrailingslash;
+  		if (empty($el['include']) || preg_match('~'.(String)$el['include'].'~',$temppath)) {
+  			$path = $temppath;
+  		}
   	}
-    if (!empty($lConf->urlprefix)) {
+  	if (self::excludeInclude($path,$lConf->urlprefix)) {
   		$path = (string)$lConf->urlprefix.$path;
   	}
-  	if (!empty($lConf->urlsuffix)) {
+  	if (self::excludeInclude($path,$lConf->urlsuffix)) {
   		$path .= (string)$lConf->urlsuffix;
-  	}            	
+  	}
   	return $path;
+  }
+  
+  private static function excludeInclude($path,$el) {
+  	if (!empty($el)) {
+  		if (empty($el['exclude']) || !preg_match('~'.(String)$el['exclude'].'~',$path)) {
+	  		if (empty($el['include']) || preg_match('~'.(String)$el['include'].'~',$path)) {
+	  			return true;
+	  		}
+  		}
+  		return false;
+  	}
+  	return true;
   }
   
   public static function prepareforRedirect($path,$lConf) {
@@ -412,8 +431,12 @@ public static function prepareLinkForCache($path,$lConf) {
     $path .= ($lConf->cache->suffix);
   }
   if (!empty($lConf->removetrailingslash) && $lConf->removetrailingslash==1) {
-    $path = self::removeSlash($path);
-	}
+  		$temppath = self::removeSlash($path);
+  		$el = $lConf->removetrailingslash;
+  		if (empty($el['include']) || preg_match('~'.(String)$el['include'].'~',$temppath)) {
+  			$path = $temppath;
+  		}
+  }
   return $path;
   
 }
