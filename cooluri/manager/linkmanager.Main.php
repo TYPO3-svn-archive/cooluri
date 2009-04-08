@@ -191,7 +191,7 @@ class LinkManger_Main {
     $c = '<h1>Cached links</h1>';
     
     $c .= '<p class="center">';
-    $c .= '<b><a href="'.$this->file.'?mod=cache">all</a></b>
+    $c .= '<b><a href="'.$this->file.'?mod=cache&amp;l='.urlencode('%').'">all</a></b>
     ';
     for ($i=ord('A');$i<=ord('Z');$i++) {
       $c .= '<b><a href="'.$this->file.'?mod=cache&amp;l='.strtoupper(chr($i)).'">'.strtoupper(chr($i)).'</a></b>
