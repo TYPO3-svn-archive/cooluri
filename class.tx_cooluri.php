@@ -78,7 +78,7 @@ class tx_cooluri {
       if ($this->confArray['MULTIDOMAIN']) {
         if (empty(Link_Translate::$conf->cache->prefix)) {
           $domain = $_SERVER['SERVER_NAME'];
-          $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','sys_domain','domainName=\''.$_SERVER['SERVER_NAME'].'\' AND redirectTo<>\'\' AND hidden=0');
+          $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','sys_domain','domainName=\''.$domain.'\' AND redirectTo<>\'\' AND hidden=0');
           $row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
           if ($row) {
             $url = $row['redirectTo'].substr($paramsinurl,1);
@@ -220,10 +220,15 @@ class tx_cooluri {
       if (!$lt) return;
       
       if ($this->confArray['MULTIDOMAIN']) {
-        if (empty(Link_Translate::$conf->cache->prefix)) {
-          $this->simplexml_addChild(Link_Translate::$conf->cache,'prefix',$this->getDomain((int)$pars['id']).'@');
+        if (!empty($params['LD']['domain'])) {
+          $domain = $params['LD']['domain'];
         } else {
-          Link_Translate::$conf->cache->prefix = $this->getDomain((int)$pars['id']).'@';
+          $domain = $this->getDomain((int)$pars['id']);
+        }
+        if (empty(Link_Translate::$conf->cache->prefix)) {
+          $this->simplexml_addChild(Link_Translate::$conf->cache,'prefix',$domain.'@');
+        } else {
+          Link_Translate::$conf->cache->prefix = $domain.'@';
         }
       }
       array_walk($pars,array($this,'array_urldecode'));
