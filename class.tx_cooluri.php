@@ -426,6 +426,9 @@ class tx_cooluri {
   function extractArraysFromParams($params) {
   	// turn array back into query string
   	// so it can be used with parse_str
+  	if (empty($params)) {
+  		return Array();
+  	}
   	foreach ($params as $k=>$v) $params[$k] = $k.'='.$v;
 	$qs = implode('&',$params);
   	parse_str($qs,$output);
