@@ -67,7 +67,7 @@ class tx_cooluri {
     }
     
     // check if the only param is the same as the TYPO3 site root
-    if ($paramsinurl == substr(PATH_site, strlen($_SERVER['DOCUMENT_ROOT']))) return;
+    if ($paramsinurl == substr(PATH_site, strlen(preg_replace('~/$~', '', $_SERVER['DOCUMENT_ROOT'])))) return;
     
     if ($cond)	{
     
