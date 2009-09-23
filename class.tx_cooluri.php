@@ -107,9 +107,10 @@ class tx_cooluri {
       unset($pars['id']);
       $npars = $this->extractArraysFromParams($pars);
       $params['pObj']->mergingWithGetVars($npars);
-  
+
       // Re-create QUERY_STRING from Get vars for use with typoLink()
       $_SERVER['QUERY_STRING'] = $this->decodeSpURL_createQueryString($pars);
+      t3lib_div::devLog('Resolved QS: '.$_SERVER['QUERY_STRING'],'CoolUri');
     }
   }
   
@@ -187,7 +188,7 @@ class tx_cooluri {
     if (empty($GLOBALS['TSFE']->config['config']['tx_cooluri_enable']) || !$GLOBALS['TSFE']->config['config']['tx_cooluri_enable']) {
   		return;
   	}
-  
+
     if (!empty($params['args']['page']['shortcut']) && $params['args']['page']['doktype']==4) {
       $shortcut = $params['args']['page']['shortcut'];
       $limit = 5;
@@ -203,8 +204,6 @@ class tx_cooluri {
         $params['args']['page'] = $page;
     }
     
-    t3lib_div::devLog('PAGE: '.print_r($page,true),'CoolUri');
-    
     if ($params['args']['page']['doktype']==3) {
       switch ($params['args']['page']['urltype']) {
         case 1: $url = 'http://'; break;
@@ -218,7 +217,7 @@ class tx_cooluri {
     
     $tu = explode('?',$params['LD']['totalURL']);
     
-    t3lib_div::devLog('TotalURL: '.$params['LD']['totalURL'],'CoolUri');
+    t3lib_div::devLog('PARAMS URL: '.$params['LD']['totalURL'],'CoolUri');
     
     if (isset($tu[1])) {
       $anch = explode('#',$tu[1]);
