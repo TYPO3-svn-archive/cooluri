@@ -1,3 +1,27 @@
+2009-03-14 00:21:05 CET  bednee
+
+	Include/Exclude for suffix/prefix/slash
+
+2009-02-25 20:40:23 CET  bednee
+
+	Ext tables for postrgre SQL, thanks to Christian Lerrahn
+
+2009-02-25 20:37:29 CET  bednee
+
+	Fixing multidimensional arrays parsing in URL
+
+2009-02-23 22:30:19 CET  bednee
+
+	Working way of comparison
+
+2009-02-21 23:51:02 CET  bednee
+
+	Better comparison
+
+2009-01-05 18:04:37 CET  bednee
+
+	LinkTranslate instance was not stored right in a session + changelog
+
 2008-12-26 21:41:33 CET  bednee
 
 	Default filter removed. Possiblity to filter without domains.

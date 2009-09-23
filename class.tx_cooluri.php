@@ -61,9 +61,11 @@ class tx_cooluri {
     if (!empty($params['pObj']->siteScript)) {
       $cond = $params['pObj']->siteScript && substr($params['pObj']->siteScript,0,9)!='index.php' && substr($params['pObj']->siteScript,0,1)!='?';
       $paramsinurl = '/'.$params['pObj']->siteScript;
+      t3lib_div::devLog('SITESCRIPT: '.$paramsinurl,'CoolUri');
     } else {
       $cond = t3lib_div::getIndpEnv('REQUEST_URI') && substr(t3lib_div::getIndpEnv('REQUEST_URI'),1,9)!='index.php' && substr(t3lib_div::getIndpEnv('REQUEST_URI'),1,1)!='?';
       $paramsinurl = t3lib_div::getIndpEnv('REQUEST_URI');
+      t3lib_div::devLog('REQUEST_URI: '.$paramsinurl,'CoolUri');
     }
     
     // check if the only param is the same as the TYPO3 site root
@@ -76,6 +78,7 @@ class tx_cooluri {
       if (!$lt) return;
       
       if ($this->confArray['MULTIDOMAIN']) {
+      	t3lib_div::devLog('MultiDomain on','CoolUri');
         if (empty(Link_Translate::$conf->cache->prefix)) {
           $domain = $_SERVER['SERVER_NAME'];
           $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','sys_domain','domainName=\''.$domain.'\' AND redirectTo<>\'\' AND hidden=0');
@@ -90,8 +93,10 @@ class tx_cooluri {
   				  exit;
           }
           $this->simplexml_addChild(Link_Translate::$conf->cache,'prefix',$domain.'@');
+          t3lib_div::devLog('DOMAIN: '.$domain,'CoolUri');
         } else {
           Link_Translate::$conf->cache->prefix = $_SERVER['SERVER_NAME'].'@';
+          t3lib_div::devLog('DOMAIN 2: '.$_SERVER['SERVER_NAME'],'CoolUri');
         }
       }
   
@@ -198,6 +203,8 @@ class tx_cooluri {
         $params['args']['page'] = $page;
     }
     
+    t3lib_div::devLog('PAGE: '.print_r($page,true),'CoolUri');
+    
     if ($params['args']['page']['doktype']==3) {
       switch ($params['args']['page']['urltype']) {
         case 1: $url = 'http://'; break;
@@ -210,6 +217,9 @@ class tx_cooluri {
     }
     
     $tu = explode('?',$params['LD']['totalURL']);
+    
+    t3lib_div::devLog('TotalURL: '.$params['LD']['totalURL'],'CoolUri');
+    
     if (isset($tu[1])) {
       $anch = explode('#',$tu[1]);
       $pars = Link_Func::convertQuerystringToArray($tu[1]);
@@ -220,11 +230,13 @@ class tx_cooluri {
       if (!$lt) return;
       
       if ($this->confArray['MULTIDOMAIN']) {
+      	t3lib_div::devLog('MultiDomain on','CoolUri');
         if (!empty($params['LD']['domain'])) {
           $domain = $params['LD']['domain'];
         } else {
           $domain = $this->getDomain((int)$pars['id']);
         }
+        t3lib_div::devLog('Domain: '.$domain,'CoolUri');
         if (empty(Link_Translate::$conf->cache->prefix)) {
           $this->simplexml_addChild(Link_Translate::$conf->cache,'prefix',$domain.'@');
         } else {
@@ -233,6 +245,8 @@ class tx_cooluri {
       }
       array_walk($pars,array($this,'array_urldecode'));
       $params['LD']['totalURL'] = $lt->params2cool($pars,'',false).(!empty($anch[1])?'#'.$anch[1]:'');
+      
+      t3lib_div::devLog('Found URL: '.$params['LD']['totalURL'],'CoolUri');
       
       if ($this->confArray['MULTIDOMAIN']) {
         $params['LD']['totalURL'] = explode('@',$params['LD']['totalURL']);
@@ -248,6 +262,7 @@ class tx_cooluri {
   }
   
   function getDomain($id) {
+  	t3lib_div::devLog('Getting domain','CoolUri');
     if ($GLOBALS['TSFE']->showHiddenPage || self::isBEUserLoggedIn()) {
       $enable = ' AND pages.deleted=0';
       $enable2 = ' AND deleted=0';
@@ -258,6 +273,8 @@ class tx_cooluri {
     $db = &$GLOBALS['TYPO3_DB'];
     $max = 10;
     while ($max>0 && $id) {
+    	
+      t3lib_div::devLog('Looking for domain on page '.$id,'CoolUri');
       
       $q = $db->exec_SELECTquery('pages.title, pages.pid, pages.is_siteroot, pages.uid AS id, sys_domain.domainName, sys_domain.redirectTo','pages LEFT JOIN sys_domain ON pages.uid=sys_domain.pid','pages.uid='.$id.$enable.' AND (sys_domain.hidden=0 OR sys_domain.hidden IS NULL)','','sys_domain.sorting');
       $page = $db->sql_fetch_assoc($q);
@@ -266,6 +283,7 @@ class tx_cooluri {
       $count = $db->sql_fetch_assoc($temp);
       
       if ($page['domainName'] && !$page['redirectTo']) {
+      	t3lib_div::devLog('Resolved domain: '.$page['domainName'],'CoolUri');
         return ereg_replace('^.*://(.*)/?$','\\1',ereg_replace('/$','',$page['domainName']));
       }
       
@@ -275,6 +293,7 @@ class tx_cooluri {
       $id = $page['pid'];
       --$max;
     }
+    t3lib_div::devLog('Domain not found, using SERVER_NAME '.$_SERVER['SERVER_NAME'],'CoolUri');
     return $_SERVER['SERVER_NAME'];
   }
   
