@@ -286,7 +286,10 @@ class tx_cooluri {
         return ereg_replace('^.*://(.*)/?$','\\1',ereg_replace('/$','',$page['domainName']));
       }
       
-      if ($count['num']>0 || $page['is_siteroot']==1) { return $_SERVER['SERVER_NAME']; }
+      if ($count['num']>0 || $page['is_siteroot']==1) { 
+        t3lib_div::devLog('Domain missing for ID '.$id.', using SERVER_NAME '.$_SERVER['SERVER_NAME'],'CoolUri');
+        return $_SERVER['SERVER_NAME'];
+      }
       
       
       $id = $page['pid'];
