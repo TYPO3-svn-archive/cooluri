@@ -106,6 +106,7 @@ class tx_cooluri {
       $params['pObj']->id = $pars['id'];
       unset($pars['id']);
       $npars = $this->extractArraysFromParams($pars);
+      t3lib_div::stripSlashesOnArray($npars);
       $params['pObj']->mergingWithGetVars($npars);
 
       // Re-create QUERY_STRING from Get vars for use with typoLink()
