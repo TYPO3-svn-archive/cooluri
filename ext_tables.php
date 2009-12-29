@@ -23,7 +23,15 @@ $TCA['pages']['columns']['tx_cooluri_exclude'] = array(
 	)
 ); 
 
-t3lib_extMgm::addToAllTCAtypes('pages','tx_realurl_pathsegment,tx_cooluri_exclude', (t3lib_div::compat_version('4.2') ? '1' : '2'), 'after:nav_title');
-t3lib_extMgm::addToAllTCAtypes('pages','tx_realurl_pathsegment,tx_cooluri_exclude', (t3lib_div::compat_version('4.2') ? '' : '1,5,') . '4,254', 'after:nav_title');
+$TCA['pages']['columns']['tx_cooluri_excludealways'] = array(
+	'label' => 'LLL:EXT:cooluri/locallang_db.php:pages.tx_cooluri_excludealways',
+	'config' => Array (
+		'type' => 'check',
+		'default' => '0' 
+	)
+); 
+
+t3lib_extMgm::addToAllTCAtypes('pages','tx_realurl_pathsegment,tx_cooluri_exclude,tx_cooluri_excludealways', (t3lib_div::compat_version('4.2') ? '1' : '2'), 'after:nav_title');
+t3lib_extMgm::addToAllTCAtypes('pages','tx_realurl_pathsegment,tx_cooluri_exclude,tx_cooluri_excludealways', (t3lib_div::compat_version('4.2') ? '' : '1,5,') . '4,254', 'after:nav_title');
 
 ?>

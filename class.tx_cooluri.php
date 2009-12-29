@@ -403,7 +403,7 @@ class tx_cooluri {
       }
       if (!$page) break;
       
-      if ($page['tx_cooluri_exclude']==1 && !empty($pagepath)) {
+      if (($page['tx_cooluri_exclude']==1 && !empty($pagepath)) || $page['tx_cooluri_excludealways']) {
         ++$max;
         $id = $page['pid'];
         continue;

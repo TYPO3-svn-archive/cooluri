@@ -11,6 +11,7 @@ $LOCAL_LANG = Array (
 	'default' => Array (
 		'pages.tx_cooluri_pathsegment' => 'Speaking URL path segment:',
 		'pages.tx_cooluri_exclude' => 'Exclude this page from middle of a page path',
+		'pages.tx_cooluri_excludealways' => 'Always exclude this page from a page path (dangerous!)',
 	),
 	'de' => Array (
     'pages.tx_cooluri_exclude' => 'Seite in Mitte einer URL auslassen',
