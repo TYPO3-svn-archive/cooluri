@@ -415,7 +415,7 @@ public static function specCharsToASCII($title) {
     $processedTitle = $GLOBALS['TSFE']->csConvObj->specCharsToASCII($charset, $processedTitle);
     
     	// Strip the rest...:
-    $processedTitle = preg_replace('/[^A-Za-z0-9\\/\\'.$space.']/', '', $processedTitle); // strip the rest
+    $processedTitle = preg_replace('/[^A-Za-z0-9\\'.$space.']/', '', $processedTitle); // strip the rest
     $processedTitle = preg_replace('/\\'.$space.'+/',$space,$processedTitle); // Convert multiple 'spaces' to a single one
     $processedTitle = trim($processedTitle,$space);
 
