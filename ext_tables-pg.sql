@@ -14,5 +14,5 @@
 CREATE TABLE  "pages" (
 	 "tx_realurl_pathsegment"   varchar(30) default '', 
 	 "tx_cooluri_exclude"  smallint CHECK ("tx_cooluri_exclude" >= 0) default '0',
-	 "tx_cooluri_excludealways"  smallint CHECK ("tx_cooluri_exclude" >= 0) default '0',
+	 "tx_cooluri_excludealways"  smallint CHECK ("tx_cooluri_exclude" >= 0) default '0'
 ); 
