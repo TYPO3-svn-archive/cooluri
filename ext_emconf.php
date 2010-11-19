@@ -33,8 +33,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'constraints' => array(
 		'depends' => array(
 		),
-		'conflicts' => array(
-		),
+		'conflicts' => array('simulatestatic'=>'','realurl'=>''),
 		'suggests' => array(
 		),
 	),
