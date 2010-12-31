@@ -16,11 +16,12 @@
     along with CoolUri. If not, see <http://www.gnu.org/licenses/>.
 */
 
-require_once 'link.Translate.php';
-require_once 'link.Functions.php';
-require_once 'link.DBLayer.php';
-require_once 'link.DB.php';
-require_once 'link.Exception.php';
-require_once 'link.Log.php';
+class Link_Log {
+  
+  public static function log($message, $severity = 0) {
+    t3lib_div::devLog($message,'CoolUri CORE',$severity);
+  }
+  
+}
 
 ?>

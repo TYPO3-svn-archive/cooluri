@@ -422,8 +422,8 @@ class Link_Translate {
                     // not good, still needs to be refactored
                     // these paramters are read in the end to
                     // refresh cache
-                    $updatecacheid = $row['id'];
-                    $cacheduri = $row['url'];
+                    $updatecacheid = $uriFromCache[0];
+                    $cacheduri = $uriFromCache[1];
                 } else {
                     return $uriFromCache;
                 }
@@ -472,8 +472,11 @@ class Link_Translate {
                 $originalparams = Link_Func::array_intersect_key($originalparams,self::$coolParamsKeys);
             }
              
-            $q = $db->query('SELECT *, DATEDIFF(NOW(),tstamp) AS daydiff FROM '.$tp.'cache WHERE params=\''.Link_Func::prepareParamsForCache($originalparams,$tp).'\'');
+            $cacheQ = Link_Func::prepareParamsForCache($originalparams,$tp);
+            
+            $q = $db->query('SELECT *, DATEDIFF(NOW(),tstamp) AS daydiff FROM '.$tp.'cache WHERE params=\''.$cacheQ.'\'');
             $row = $db->fetch($q);
+            
             if ($row) {
                 if ($row['daydiff']==NULL) {
                     $row['daydiff'] = 2147483647; // daydiff isn't set, we force new check
@@ -482,6 +485,7 @@ class Link_Translate {
                 if (($row['daydiff']>=$checkfornew && $row['sticky']==0) || $forceUpdate) {
                     $updatecacheid = $row['id'];
                     $cacheduri = $row['url'];
+                    Link_Log::log('URL from cache 1 ('.$updatecacheid.'): '.$cacheduri);
                     return Array($updatecacheid, $cacheduri);
                 } else {
                     $qs = '';
@@ -492,6 +496,7 @@ class Link_Translate {
                             $qs = '?'.implode('&',$qsp);
                         }
                     }
+                    Link_Log::log('URL from cache 2: '.$row['url']);
                     return Link_Func::prepareforOutput($row['url'],self::$conf).$qs; // uri found in cache
                 }
             }
