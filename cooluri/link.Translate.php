@@ -429,13 +429,13 @@ class Link_Translate {
                 }
             }
             $originalparams = $params;
-            $predefparts = $this->translatePredefinedParams($params);
+            $predefparts = $this->translatePredefinedParams($params,$originalparams);
             $predefparts = array_merge($predefparts, $this->translateValuemaps($params));
             // now the pagepath
             $translatedpagepath = Array();
             $pagepath = Array();
             $this->translatePagepath($params, $pagepath, $translatedpagepath, $originalparams);
-            $this->translateUriparts($params, $pagepath, $translatedpagepath);
+            $this->translateUriparts($params, $pagepath, $translatedpagepath, $originalparams);
             $statics = $this->getStatics();
             // we need list of separators
             $seps = $this->getSeparators();
@@ -504,7 +504,7 @@ class Link_Translate {
         return null;
     }
 
-    private function translatePredefinedParams(&$params) {
+    private function translatePredefinedParams(&$params,&$originalparams) {
         $predefparts = Array();
         if (!empty(self::$conf->predefinedparts) && !empty(self::$conf->predefinedparts->part)) {
              
@@ -599,7 +599,7 @@ class Link_Translate {
         } // end pagepath
     }
 
-    private function translateUriparts(&$params, &$pagepath, &$translatedpagepath) {
+    private function translateUriparts(&$params, &$pagepath, &$translatedpagepath,&$originalparams) {
         if (!empty(self::$conf->uriparts) && !empty(self::$conf->uriparts->part)) { // a path found
             $counter = 0;
             foreach (self::$conf->uriparts->part as $pp) {
@@ -608,8 +608,10 @@ class Link_Translate {
                     $uf = Link_Func::user_func($pp,$params[(string)$pp->parameter]);
                     if ($uf!==FALSE) {
                         $translatedpagepath[(string)$pp->parameter] = $uf;
-                    } else
-                    $translatedpagepath[(string)$pp->parameter] = (empty($pp->lookindb)?$params[(string)$pp->parameter]:Link_Func::lookindb($pp->lookindb->to,$params[(string)$pp->parameter],$pp->lookindb,$originalparams));
+                    } else {
+                        $translatedpagepath[(string)$pp->parameter] = (empty($pp->lookindb)?$params[(string)$pp->parameter]:Link_Func::lookindb($pp->lookindb->to,$params[(string)$pp->parameter],$pp->lookindb,$originalparams));
+                    }
+                    unset($params[(string)$pp->parameter]);
                 } elseif (!empty($pp['pagepath']) && $pp['pagepath']==1 && !empty($pagepath[$counter])) {
                     //if (!empty($pagepath[$counter])) {
                     $translatedpagepath[(string)$pp->parameter] = $pagepath[$counter];
