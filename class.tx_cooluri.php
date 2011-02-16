@@ -195,7 +195,7 @@ class tx_cooluri {
             $limit = 5;
             while (!empty($shortcut) && $limit>0) {
                 $page = $GLOBALS['TSFE']->sys_page->getPage($shortcut);
-                if (!$page) break;
+                if (!$page || $page['doktype'] != 4) break;
                 $shortcut = $page['shortcut'];
                 $params['args']['page'] = $page;
                 --$limit;
@@ -266,7 +266,7 @@ class tx_cooluri {
                     t3lib_div::devLog('@ not found in expected MultiDomain URL: '.$params['LD']['totalURL'],'CoolUri',2);
                 }
             }
-            
+
             t3lib_div::devLog('Result URL: '.$params['LD']['totalURL'],'CoolUri');
         }
     }
