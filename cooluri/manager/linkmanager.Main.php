@@ -20,14 +20,14 @@ require_once dirname(__FILE__).'/../link.Main.php';
 require_once 'linkmanager.UserAuth.php';
 
 class LinkManger_Main {
-  
+
   private $db;
   private $file;
-  
+
   private $enable;
   private $table = 'link_';
   private $lt;
-  
+
   public function __construct($file,$conf) {
     $this->db = Link_DB::getInstance();
     $this->file = $file;
@@ -36,13 +36,13 @@ class LinkManger_Main {
     $this->enable = (!empty(Link_Translate::$conf->cache) && !empty(Link_Translate::$conf->cache->usecache) && Link_Translate::$conf->cache->usecache==1);
     if (!empty(Link_Translate::$conf->cache->tablesprefix)) $this->table = Link_Translate::$conf->cache->tablesprefix;
   }
-  
+
   public function main() {
 
     if (!$this->enable) return $this->noCache();
-    
+
     $content = '';
-    
+
     if (empty($_GET['mod'])) {
       $content .= $this->welcome();
     } else {
@@ -60,7 +60,7 @@ class LinkManger_Main {
     }
     return $content;
   }
-  
+
   public function all() {
     $c = '';
     if (!empty($_POST)) {
@@ -78,7 +78,7 @@ class LinkManger_Main {
       <form method="post" action="'.$this->file.'?mod=all">
         <input type="submit" name="refresh" value="FORCE UPDATE OF ALL LINKS" />
       </form>
-      
+
       <h2>Start againg</h2>
       <p>Delete everything - cache and oldlinks.</p>
       <form method="post" action="'.$this->file.'?mod=all">
@@ -87,7 +87,7 @@ class LinkManger_Main {
     ';
     return $c;
   }
-  
+
   private function serializedArrayToQueryString($ar) {
     $ar = Link_Func::cache2params($ar);
     $pars = Array();
@@ -96,14 +96,14 @@ class LinkManger_Main {
     }
     return implode('&amp;',$pars);
   }
-  
+
   public function delete() {
     if (empty($_GET['lid'])) $id = 0;
     else $id = (int)$_GET['lid'];
-    
+
     if (isset($_GET['old'])) $old = true;
     else $old = false;
-    
+
     if (!empty($id)) {
       $q = $this->db->query('DELETE FROM '.$this->table.($old?'oldlinks':'cache').' WHERE id='.$id.' LIMIT 1');
       if (!$q || $this->db->affected_rows()==0) {
@@ -115,14 +115,14 @@ class LinkManger_Main {
     $c .= $this->getBackLink();
     return $c;
   }
-  
+
   public function sticky() {
     if (empty($_GET['lid'])) $id = 0;
     else $id = (int)$_GET['lid'];
-    
+
     if (isset($_GET['old'])) $old = true;
     else $old = false;
-    
+
     if (!empty($id)) {
       $q = $this->db->query('UPDATE '.$this->table.'cache SET sticky=not(sticky) WHERE id='.$id.' LIMIT 1');
       if (!$q || $this->db->affected_rows()==0) {
@@ -134,62 +134,62 @@ class LinkManger_Main {
     $c .= $this->getBackLink();
     return $c;
   }
-  
+
   public function update() {
     $c = '';
     if (empty($_GET['lid'])) $id = 0;
     else $id = (int)$_GET['lid'];
-    
+
     if (!empty($id)) {
       $q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE id='.$id);
       $oldlink = $this->db->fetch($q);
       if ($oldlink) {
-                
+
         $params = Link_Func::cache2params($oldlink['params']);
-        Link_Translate::params2cool($params,'',true,false,true);
-        
+        $this->lt->params2cool($params,'',true,false,true);
+
         // multidomain option - it's a Typo3 hack, but what the heck
         // it may be used even without Typo3
         $md = explode('@',$oldlink['url']);
         if (count($md)>1) {
           // now it's required to add the prefix back
-          // domain change won't be supported           
+          // domain change won't be supported
           $q = $this->db->query('UPDATE '.$this->table.'cache set url=CONCAT(\''.$md[0].'\',\'@\',url) WHERE id='.$id);
         }
-        
+
         $q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE id='.$id);
         $newlink = $this->db->fetch($q);
-        
+
         if ($newlink['url']==$oldlink['url']) {
           $c .= '<div class="error"><p>The link hasn\'t been changed.</p></div>';
         } else {
           $c .= '<div class="succes"><p>The link has been updated from '.$oldlink['url'].' to '.$newlink['url'].'.</p></div>';
         }
-        
+
       } else {
         $c .= '<div class="error"><p>Link with this ID is not in the cache.</p></div>';
       }
     }
-    
+
     $c .= $this->getBackLink();
     return $c;
   }
-  
+
   private function getBackLink() {
     if (!empty($_GET['from'])) $from = explode(':',$_GET['from']);
     return '<p class="center"><a href="'.$this->file.(empty($from)?'':'?').(empty($from[0])?'':'mod='.$from[0].(empty($from[1])?'':'&amp;l='.$from[1])).'">&lt;&lt; Back</a></p>';
   }
-  
+
   public function cache() {
-    
+
     if (empty($_GET['l'])) {
       $let = '';
     } else {
       $let = $this->db->escape($_GET['l']);
     }
-    
+
     $c = '<h1>Cached links</h1>';
-    
+
     $c .= '<p class="center">';
     $c .= '<b><a href="'.$this->file.'?mod=cache&amp;l='.urlencode('%').'">all</a></b>
     ';
@@ -206,14 +206,14 @@ class LinkManger_Main {
       <label>Ignore domain: <input type="checkbox" name="domain" value="1" '.(!empty($_GET['domain'])?' checked="checked"':'').'/></label>
     </p>
     </form>';
-    
+
     if (!empty($let)) {
-    	
+
     	if (!empty($_GET['domain'])) {
     		$let = str_replace('%','.*',$let);
     		$q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE url RLIKE \'^[^@]*@?'.strtolower($let).'.*\' OR url RLIKE \'^[^@]*@?'.strtoupper($let).'.*\' ORDER BY url');
     	} else {
-    		$q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE url LIKE \''.strtolower($let).'%\' OR url LIKE \''.strtoupper($let).'%\' ORDER BY url');	
+    		$q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE url LIKE \''.strtolower($let).'%\' OR url LIKE \''.strtoupper($let).'%\' ORDER BY url');
     	}
 	    $num = $this->db->num_rows($q);
 	    if ($num>0) {
@@ -238,21 +238,21 @@ class LinkManger_Main {
 	    } else {
 	      $c .= '<p>No cached links found.</p>';
 	    }
-    
+
     } else {
     	$c .= '<p>Input any filter. Use "%" to get all links.';
     }
     return $c;
   }
-  
+
   public function old() {
     if (empty($_GET['l']))
       $let = '%';
     else
       $let = $this->db->escape($_GET['l']);
-    
+
     $c = '<h1>Old links</h1>';
-    
+
     $c .= '<p class="center">';
     $c .= '<b><a href="'.$this->file.'?mod=old">all</a></b>
     ';
@@ -268,9 +268,9 @@ class LinkManger_Main {
       <input type="submit" value="Search" class="submit" />
     </p>
     </form>';
-    
+
     $q = $this->db->query('SELECT o.id, o.url AS ourl, l.url AS lurl, o.tstamp FROM '.$this->table.'oldlinks AS o LEFT JOIN '.$this->table.'cache AS l ON l.id=o.link_id WHERE o.url LIKE \''.strtolower($let).'%\' OR o.url LIKE \''.strtoupper($let).'%\' ORDER BY o.url');
-    
+
     $num = $this->db->num_rows($q);
     if ($num>0) {
       $c .= '<p class="center">Records found: '.$num.'</p>';
@@ -291,13 +291,13 @@ class LinkManger_Main {
     }
     return $c;
   }
-  
+
   public function noCache() {
     $c = '<h1>Welcome to the CoolURIs\' project\'s LinkManager</h1>
     <p>To be able to work with this LinkManager, you have to have the cache enabled.</p>';
     return $c;
   }
-  
+
   public function welcome() {
     $c = '<h1>Welcome to the CoolURIs\' LinkManager</h1>
     <p>This manager is part of the URI Transformer project.</p>
@@ -314,7 +314,7 @@ class LinkManger_Main {
     ';
     return $c;
   }
-  
+
   public function link() {
     if (empty($_GET['lid'])) {
       $c = '<h1>Create new CoolURI</h1>';
@@ -324,13 +324,13 @@ class LinkManger_Main {
       $new = false;
       $id = (int)$_GET['lid'];
     }
-    
+
     if (!$new) {
       $q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE id='.$id);
       $data = $this->db->fetch($q);
       $data['params'] = str_replace('&amp;','&',$this->serializedArrayToQueryString($data['params']));
     }
-    
+
     if (!empty($_POST)) {
       $data = $_POST;
       $data = array_map('trim',$data);
@@ -339,7 +339,7 @@ class LinkManger_Main {
       } else {
         $params = Link_Func::convertQuerystringToArray($data['params']);
         $cp = Link_Func::prepareParamsForCache($params);
-        
+
         $ok = true;
         $olq = $this->db->query('SELECT COUNT(*) FROM '.$this->table.'cache WHERE params=\''.$cp.'\''.($new?'':' AND id<>'.$id));
         $num = $this->db->fetch_row($olq);
@@ -355,9 +355,9 @@ class LinkManger_Main {
           $c .= '<div class="error"><p>A different link with such URI exists already.</p></div>';
           $ok = false;
         }
-        
+
         if ($new && $ok) {
-          $q = $this->db->query('INSERT INTO '.$this->table.'cache(url,params,sticky,crdatetime) 
+          $q = $this->db->query('INSERT INTO '.$this->table.'cache(url,params,sticky,crdatetime)
                                         VALUES(\''.$this->db->escape($data['url']).'\',
                                         \''.$cp.'\',
                                         '.(!empty($data['sticky']) && $data['sticky']==1?1:0).',
@@ -366,18 +366,18 @@ class LinkManger_Main {
           if ($q) {
             $c .= '<div class="succes"><p>The new link was saved successfully.</p></div>';
             $c .= '<p class="center"><a href="'.$this->file.'?mod=cache&l='.htmlspecialchars($data['url']).'">Show &gt;&gt;</a></p>';
-            $data = Array();  
+            $data = Array();
           }
           else $c .= '<div class="error"><p>Could not save the link.</p></div>';
         } elseif (!empty($id) && $ok) {
           $oldq = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE id='.$id);
           $old = $this->db->fetch($oldq);
           if ($data['url']!=$old['url']) {
-            $q = $this->db->query('INSERT INTO '.$this->table.'oldlinks(link_id,url) 
+            $q = $this->db->query('INSERT INTO '.$this->table.'oldlinks(link_id,url)
                                         VALUES('.$id.',
                                         \''.$old['url'].'\')');
           }
-          $qq = $this->db->query('UPDATE '.$this->table.'cache SET 
+          $qq = $this->db->query('UPDATE '.$this->table.'cache SET
                                   url=\''.$this->db->escape($data['url']).'\',
                                   params=\''.$cp.'\',
                                   sticky='.(!empty($data['sticky']) && $data['sticky']==1?1:0).'
@@ -392,7 +392,7 @@ class LinkManger_Main {
         }
       }
     }
-    
+
     $c .= '<form method="post" action="'.$this->file.'?mod=link'.($new?'':'&amp;lid='.$id).'">
     <fieldset>
     <legend>URI details</legend>
@@ -408,26 +408,26 @@ class LinkManger_Main {
     ';
     return $c;
   }
-  
-    
+
+
   public function redirect() {
-    
+
     $c = '<h1>Set new redirect</h1>';
-    
+
     if (!empty($_POST)) {
       $id = (int)$_POST['to'];
       if (empty($id) || empty($_POST['url'])) {
-        $c .= '<div class="error"><p>All fields are required.</p></div>'; 
+        $c .= '<div class="error"><p>All fields are required.</p></div>';
       } else {
-        $this->db->query('INSERT INTO '.$this->table.'oldlinks(link_id,url) 
+        $this->db->query('INSERT INTO '.$this->table.'oldlinks(link_id,url)
                                         VALUES('.$id.',
                                         \''.$this->db->escape($_POST['url']).'\')');
         $c .= '<div class="succes"><p>The redirect was saved successfully.</p></div>';
       }
     }
-    
+
     $allq = $this->db->query('SELECT * FROM '.$this->table.'cache ORDER BY url');
-    
+
     $c .= '<form method="post" action="'.$this->file.'?mod=redirect">
     <fieldset>
     <legend>Redirect details</legend>
@@ -445,13 +445,13 @@ class LinkManger_Main {
     <input type="submit" value="Submit this redirect" class="submit" />
     </form>
     ';
-    return $c; 
+    return $c;
   }
-  
+
   public function menu() {
     if ($this->enable)
       $mods = Array(''=>'Home','cache'=>'Cached links','old'=>'Old links','link'=>'New link','redirect'=>'New redirect','all'=>'Delete/Update all');
-    else 
+    else
       $mods = Array(''=>'Home');
     $cm = '';
     if (!empty($_GET['mod'])) $cm = $_GET['mod'];
