@@ -383,7 +383,7 @@ class Link_Translate {
                 }
 
             } // end !empty($uri) && empty($cachedparams)
-             
+
             $temp =  empty($cachedparams)?$finaluriparts:$cachedparams;
             $temp = array_map('urldecode',$temp);
 
@@ -399,7 +399,7 @@ class Link_Translate {
                 }
             } else
             $_GET = $res;
-             
+
             $this->uri = $res;
 
             return $res;
@@ -411,8 +411,8 @@ class Link_Translate {
     public function params2coolForRedirect(array $params) {
         return $this->params2cool($params,'',false);
     }
-    
-    
+
+
     public function params2cool(array $params, $file = '', $entityampersand = true, $dontconvert = false, $forceUpdate = false) {
         if (!empty(self::$conf->cooluris) && self::$conf->cooluris==1 && !$dontconvert) {
             // if cache is allowed, we'll look for an uri
@@ -452,9 +452,9 @@ class Link_Translate {
             return Link_Func::prepareforOutput($path,self::$conf).(empty($params)?'':$params);
         } else {
             return (empty($file)?$_SERVER['PHP_SELF']:$file).(empty($params)?'':'?'.http_build_query($params,'',$entityampersand?'&amp;':'&'));
-        } 
+        }
     }
-    
+
 
     private function getCachedUri($params, $forceUpdate) {
         if (!empty(self::$conf->cache) && !empty(self::$conf->cache->usecache) && self::$conf->cache->usecache==1) {
@@ -463,7 +463,7 @@ class Link_Translate {
             // cache is valid for only a sort period of time, after that time we need to do a recheck
             $checkfornew = !empty(self::$conf->cache->params2cool)&&!empty(self::$conf->cache->params2cool->checkforchangeevery)?(string)self::$conf->cache->params2cool->checkforchangeevery:0;
             $originalparams = $params;
-             
+
             // we don't cache params
             if (empty(self::$conf->cache->cacheparams) || self::$conf->cache->cacheparams!=1) {
                 if (!self::$coolParamsKeys) {
@@ -471,12 +471,10 @@ class Link_Translate {
                 }
                 $originalparams = Link_Func::array_intersect_key($originalparams,self::$coolParamsKeys);
             }
-             
             $cacheQ = Link_Func::prepareParamsForCache($originalparams,$tp);
-            
             $q = $db->query('SELECT *, DATEDIFF(NOW(),tstamp) AS daydiff FROM '.$tp.'cache WHERE params=\''.$cacheQ.'\'');
             $row = $db->fetch($q);
-            
+
             if ($row) {
                 if ($row['daydiff']==NULL) {
                     $row['daydiff'] = 2147483647; // daydiff isn't set, we force new check
@@ -507,7 +505,7 @@ class Link_Translate {
     private function translatePredefinedParams(&$params,&$originalparams) {
         $predefparts = Array();
         if (!empty(self::$conf->predefinedparts) && !empty(self::$conf->predefinedparts->part)) {
-             
+
             // first let's translate predefenied params
             foreach (self::$conf->predefinedparts->part as $ppart) {
                 if (isset($params[(string)$ppart->parameter])) {
@@ -573,7 +571,7 @@ class Link_Translate {
                     if (!$row) {
                         $result = false; continue;
                     }
-                     
+
                     if (empty(self::$conf->pagepath->alias)) { // we need to convert title to a uri, if alias is not set
                         $val = $row[1];
                         $k = 2;
@@ -771,7 +769,7 @@ class Link_Translate {
         if (!empty(self::$conf->cache) && !empty(self::$conf->cache->usecache) && self::$conf->cache->usecache==1) {
             $tp = Link_Func::getTablesPrefix(self::$conf);
             $db = Link_DB::getInstance();
-             
+
             $p = '';
             if (!empty(self::$conf->cache->cacheparams) && self::$conf->cache->cacheparams==1 && !empty($params)) {
                 $p = $params;
@@ -787,16 +785,17 @@ class Link_Translate {
                         // uri is changed, we need to move the old one to the old links
                         $db->query('INSERT INTO '.$tp.'oldlinks(link_id,url) VALUES('.(int)$updatecacheid.',\''.$db->escape($cacheduri).'\')');
                         $db->query('UPDATE '.$tp.'cache SET url=\''.$db->escape($path.$p).'\' WHERE id='.(int)$updatecacheid);
-                         
+
                         // if the path has changed back, no need to store it in the oldlinks
                         // prevets from overflooding the DB when tampering with configuration
                         $db->query('DELETE FROM '.$tp.'oldlinks WHERE url=\''.$db->escape($path.$p).'\'');
-                         
+
                     }
                 } else {
                     $res = $db->query('SELECT * FROM '.$tp.'cache WHERE url=\''.$db->escape($path.$p).'\'');
-                    if ($db->num_rows($res)==0)
-                    $db->query('INSERT INTO '.$tp.'cache(url,params,crdatetime) VALUES(\''.$db->escape($path.$p).'\',\''.Link_Func::prepareParamsForCache($originalparams).'\',NOW())');
+                    if ($db->num_rows($res)==0) {
+                       $db->query('INSERT INTO '.$tp.'cache(url,params,crdatetime) VALUES(\''.$db->escape($path.$p).'\',\''.Link_Func::prepareParamsForCache($originalparams).'\',NOW())');
+                    }
                 }
             }
         }
