@@ -448,7 +448,7 @@ class Link_Translate {
             $partorder = $this->getPartOrder();
             $path = $this->getSortedPath($path,$partorder,$tp,$vm,$pp,$pagep);
             $params = $this->transformParamsToQS($params, $entityampersand);
-            $this->saveInCache($params,$path,$originalparams,$updatecacheid,$cacheduri);
+            $path = $this->saveInCache($params,$path,$originalparams,$updatecacheid,$cacheduri);
             return Link_Func::prepareforOutput($path,self::$conf).(empty($params)?'':$params);
         } else {
             return (empty($file)?$_SERVER['PHP_SELF']:$file).(empty($params)?'':'?'.http_build_query($params,'',$entityampersand?'&amp;':'&'));
@@ -799,6 +799,8 @@ class Link_Translate {
                 }
             }
         }
+        
+        return $path;
     }
 
     public function GET($var) {
