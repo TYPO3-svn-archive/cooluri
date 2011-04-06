@@ -195,9 +195,9 @@ class tx_cooluri {
             $limit = 5;
             while (!empty($shortcut) && $limit>0) {
                 $page = $GLOBALS['TSFE']->sys_page->getPage($shortcut);
+                $params['args']['page'] = $page;
                 if (!$page || $page['doktype'] != 4) break;
                 $shortcut = $page['shortcut'];
-                $params['args']['page'] = $page;
                 --$limit;
             }
         } elseif (!empty($params['args']['page']['shortcut_mode']) && $params['args']['page']['shortcut_mode']==1 && $params['args']['page']['doktype']==4) {
