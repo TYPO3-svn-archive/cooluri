@@ -447,8 +447,8 @@ class Link_Translate {
             $pagep = $this->getAppendedPagepath($pagepath);
             $partorder = $this->getPartOrder();
             $path = $this->getSortedPath($path,$partorder,$tp,$vm,$pp,$pagep);
-            $params = $this->transformParamsToQS($params, $entityampersand);
-            $path = $this->saveInCache($params,$path,$originalparams,$updatecacheid,$cacheduri);
+            $path = $this->saveInCache($params,$path,$originalparams,$updatecacheid,$cacheduri,$entityampersand);
+            $params = $this->transformParamsToQS($params, $entityampersand);            
             return Link_Func::prepareforOutput($path,self::$conf).(empty($params)?'':$params);
         } else {
             return (empty($file)?$_SERVER['PHP_SELF']:$file).(empty($params)?'':'?'.http_build_query($params,'',$entityampersand?'&amp;':'&'));
@@ -764,7 +764,7 @@ class Link_Translate {
         return $pagep;
     }
 
-    private function saveInCache($params,$path,$originalparams,$updatecacheid,$cacheduri) {
+    private function saveInCache($params,$path,$originalparams,$updatecacheid,$cacheduri,$entityampersand) {
         // if cache is allowed, we'll save path to the cache (excluding possible prefix and suffix)
         if (!empty(self::$conf->cache) && !empty(self::$conf->cache->usecache) && self::$conf->cache->usecache==1) {
             $tp = Link_Func::getTablesPrefix(self::$conf);
@@ -772,11 +772,15 @@ class Link_Translate {
 
             $p = '';
             if (!empty(self::$conf->cache->cacheparams) && self::$conf->cache->cacheparams==1 && !empty($params)) {
-                $p = $params;
+                $p = $this->transformParamsToQS($params, $entityampersand);
             }
 
             $path = Link_Func::prepareLinkForCache($path,self::$conf);
-
+            
+            foreach ($params as $k=>$v) {
+                unset($originalparams[$k]);
+            }
+            
             if (!empty($originalparams)) {
                 if (!empty($updatecacheid)) {
                     // first we will update the timestamp (so we will now, when the last uri check was)
