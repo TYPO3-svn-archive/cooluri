@@ -35,7 +35,10 @@ class tx_cooluri {
      * editing the conf file, so they need to see the changes immediately
      */
     public function getTranslateInstance() {
-        if (!empty($_SESSION['coolUriTransformerInstance']) && !empty($_SESSION['coolUriTransformerInstance']->conf) && !self::isBEUserLoggedIn()) {
+        if (!isset($_SESSION) || !is_array($_SESSION)) {
+    			session_start();
+    		}
+        if (!self::isBEUserLoggedIn() && !empty($_SESSION['coolUriTransformerInstance']) && !empty($_SESSION['coolUriTransformerInstance']->conf)) {
             return $_SESSION['coolUriTransformerInstance'];
         }
 
@@ -49,7 +52,8 @@ class tx_cooluri {
         else return false;
 
         if (!self::isBEUserLoggedIn()) {
-            $_SESSION['coolUriTransformerInstance'] = @clone($lt);
+            $cc = @clone($lt);
+            $_SESSION['coolUriTransformerInstance'] = $cc;
         }
         return $lt;
     }
@@ -267,6 +271,12 @@ class tx_cooluri {
                 }
             }
 
+            // Check if config.absRefPrefix is set and if link doesn't already start with http:// or https://
+			if (!empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
+				if(!strpos($params['LD']['totalURL'], '://'))
+					$params['LD']['totalURL'] = $GLOBALS['TSFE']->config['config']['absRefPrefix'].($params['LD']['totalURL'] != '/' ? $params['LD']['totalURL'] : '');
+			}
+
             t3lib_div::devLog('Result URL: '.$params['LD']['totalURL'],'CoolUri');
         }
     }
@@ -318,7 +328,7 @@ class tx_cooluri {
             if ($ss[1]) $pars = Link_Func::convertQuerystringToArray($ss[1]);
 
             $pageid = $pars['id'];
-            if (!is_numeric($pageid)) {
+            if (!ctype_digit($pageid)) {
                 $pageid = $GLOBALS['TYPO3_DB']->fullQuoteStr($pageid,'pages');
                 $q = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','pages','alias='.$pageid);
                 $page = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($q);

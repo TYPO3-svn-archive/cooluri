@@ -22,10 +22,10 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-require_once(PATH_tslib . 'class.tslib_pibase.php'); 
+require_once(PATH_tslib . 'class.tslib_pibase.php');
 
 class tx_cooluritest_pi1 extends tslib_pibase {
-    
+
     var $URLS = Array(
         Array(22,'&paramD=100',Array()),
         Array(24,'',Array('paramZ'=>100)),
@@ -33,25 +33,31 @@ class tx_cooluritest_pi1 extends tslib_pibase {
         Array(24,'&array[k1]=foo&paramE=removed',Array('array'=>array('k3'=>'foo','k2'=>'bar'))),
         Array(23,'&L=1',Array('add'=>1)),
         Array(23,'&L=1',Array('add'=>2)),
+        Array(25,'&paramD=view-list|page_id-142',Array())
     );
-    
+
     function main($content, $conf) {
         $GLOBALS['TSFE']->set_no_cache();
-        
+
         $GLOBALS['TYPO3_DB']->exec_DELETEquery('link_cache','1=1');
         $GLOBALS['TYPO3_DB']->exec_DELETEquery('link_oldlinks','1=1');
-        
+
         $lt = Link_Translate::getInstance(dirname(__FILE__).'/CoolUriConf.xml');
         $_SESSION['coolUriTransformerInstance'] = $lt;
-            
+
         $links = Array();
         foreach ($this->URLS as $url) {
             $links[] = $this->cObj->typolink_URL(Array('parameter'=>$url[0],'additionalParams'=>$url[1].$this->getToQS($url[2])));
         }
         $content = implode('<br />',$links);
-        
+
         $params = array();
         foreach ($links as $i=>$l) {
+
+        	if (!empty($GLOBALS['TSFE']->config['config']['absRefPrefix'])) {
+        		$l = preg_replace('!^'.$GLOBALS['TSFE']->config['config']['absRefPrefix'].'!','',$l);
+        	}
+
             $cu = new tx_cooluri();
             $p = Array();
             $p['pObj'] = $GLOBALS['TSFE'];
@@ -65,15 +71,15 @@ class tx_cooluritest_pi1 extends tslib_pibase {
             $_GET = $curGet;
         }
         $content .= '<br /><br />'.implode('<br>',$params);
-        
+
         return $content;
     }
-    
+
     function getToQS($p) {
         if (!$p) return '';
         return '&'.http_build_query($p);
     }
-    
+
 }
 
 ?>
