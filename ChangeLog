@@ -1,3 +1,16 @@
+r48786 | bednee | 2011-06-16 22:36:33 CEST
+
+Bug #6425 fix (felogin does not work with saltedpasswords and rsaauth if cooluri is turned on)
+Bug #11080 fix (config.absRefPrefix is not taken into account)
+----------------------------------------------------------------------------
+r48098 | bednee | 2011-05-24 23:03:23 CEST
+
+Untranslated parameters are not stored in cache
+----------------------------------------------------------------------------
+r46292 | bednee | 2011-04-06 20:12:40 CEST
+
+Shortcut problem fix
+----------------------------------------------------------------------------
 r46212 | bednee | 2011-04-04 21:31:10 CEST
 
 Fixed multidomain bug + prep for lang_cooluri ext

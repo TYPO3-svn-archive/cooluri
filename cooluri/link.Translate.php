@@ -579,7 +579,7 @@ class Link_Translate {
                             $val = $row[$k];
                             ++$k;
                         }
-                        if (!empty($conf->sanitize) && $conf->sanitize==1) {
+                        if (!empty(self::$conf->sanitize) && self::$conf->sanitize==1) {
                             $pagepath[] = Link_Func::sanitize_title_with_dashes($val);
                         } else {
                             $pagepath[] = Link_Func::URLize($val);

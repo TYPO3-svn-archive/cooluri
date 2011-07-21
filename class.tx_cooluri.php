@@ -369,7 +369,7 @@ class tx_cooluri {
                     $url = 'http://'.$url[0].'/'.$url[1];
                 }
 
-                Link_Func::redirect($url);
+                Link_Func::redirect($url,301);
             }
         }
     }
