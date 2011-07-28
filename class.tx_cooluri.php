@@ -220,9 +220,10 @@ class tx_cooluri {
             return;
         }
 
-        $tu = explode('?',$params['LD']['totalURL']);
+        $decodedUrl = strtr($params['LD']['totalURL'],array('%5B'=>'[','%5D' => ']'));
 
-        t3lib_div::devLog('PARAMS URL: '.$params['LD']['totalURL'],'CoolUri');
+        $tu = explode('?',$decodedUrl);
+        t3lib_div::devLog('PARAMS URL: '.$decodedUrl,'CoolUri');
 
         if (isset($tu[1])) {
             $anch = explode('#',$tu[1]);
@@ -251,6 +252,13 @@ class tx_cooluri {
             $params['LD']['totalURL'] = $lt->params2cool($pars,'',false).(!empty($anch[1])?'#'.$anch[1]:'');
 
             t3lib_div::devLog('Found URL: '.$params['LD']['totalURL'],'CoolUri');
+
+            // urlencode stuff after ?
+            $parts = explode('?',$params['LD']['totalURL']);
+            if (isset($parts[1])) {
+                $parts[1] = strtr($parts[1],array('['=>'%5B',']'=>'%5D'));
+            }
+            $params['LD']['totalURL'] = implode('?',$parts);
 
             if ($this->confArray['MULTIDOMAIN']) {
                 if (strpos($params['LD']['totalURL'],'@')) {

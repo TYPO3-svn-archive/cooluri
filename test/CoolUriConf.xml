@@ -33,13 +33,6 @@
     <part>
       <parameter>array[k1]</parameter>
     </part>
-    <part>
-      <parameter>tx_eeblog[showUid]</parameter>
-      <lookindb>
-        <to>SELECT subject FROM tx_eeblog_maintable WHERE uid=$1</to>
-        <t3conv>1</t3conv>
-      </lookindb>
-    </part>
     <!-- you can move cHash to predefineparts to remove in from URL
          but first read the manual -->
     <part>
@@ -81,6 +74,10 @@
     -->
     <part key="prefix-(.*)" regexp="1">
       <parameter>paramD</parameter>
+    </part>
+
+    <part key="page-(.*)" regexp="1">
+        <parameter>array[k5]</parameter>
     </part>
     <!-- if parameter matches value, key will be added to URL 
          with mutliple values, use valuemaps
