@@ -1,3 +1,7 @@
+CoolUri 1.0.26:
+- Bug #28519: Encode and decode brackets because of 4.5.4
+- 301 redirect for redirectOldLinksToNew
+
 r48786 | bednee | 2011-06-16 22:36:33 CEST
 
 Bug #6425 fix (felogin does not work with saltedpasswords and rsaauth if cooluri is turned on)
