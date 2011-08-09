@@ -307,7 +307,7 @@ class tx_cooluri {
             $q = $db->exec_SELECTquery('pages.title, pages.pid, pages.is_siteroot, pages.uid AS id, sys_domain.domainName, sys_domain.redirectTo','pages LEFT JOIN sys_domain ON pages.uid=sys_domain.pid','pages.uid='.$id.$enable.' AND (sys_domain.hidden=0 OR sys_domain.hidden IS NULL)','','sys_domain.sorting');
             $page = $db->sql_fetch_assoc($q);
 
-            $temp = $db->exec_SELECTquery('COUNT(*) as num','sys_template','pid='.$id.' AND root=1'.$enable2);
+            $temp = $db->exec_SELECTquery('COUNT(*) as num','sys_template','deleted=0 AND hidden=0 AND pid='.$id.' AND root=1'.$enable2);
             $count = $db->sql_fetch_assoc($temp);
 
             if ($page['domainName'] && !$page['redirectTo']) {
@@ -419,7 +419,7 @@ class tx_cooluri {
             $q = $db->exec_SELECTquery('*','pages','uid='.$id.$enable);
             $page = $db->sql_fetch_assoc($q);
 
-            $temp = $db->exec_SELECTquery('COUNT(*) as num','sys_template','pid='.$id.' AND root=1'.$enable);
+            $temp = $db->exec_SELECTquery('COUNT(*) as num','sys_template','deleted=0 AND hidden=0 AND pid='.$id.' AND root=1'.$enable);
             $count = $db->sql_fetch_assoc($temp);
 
             if ($count['num']>0 || $page['is_siteroot']==1) { return $pagepath; }
@@ -488,6 +488,10 @@ class tx_cooluri {
     private static function isBEUserLoggedIn() {
         if (self::$pObj==null) return false;
         return self::$pObj->beUserLogin;
+    }
+
+    public static function pageNotFound() {
+        $GLOBALS['TSFE']->pageNotFoundAndExit();
     }
 }
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cooluri/class.tx_cooluri.php'])    {

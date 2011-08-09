@@ -20,6 +20,8 @@
         page - will show a file (loaded using file_get_contents)
         redirect - will redirect to a certaing URL
         message - will output a message
+        userfunc - user function is called, there's a default implementation of standard TYPO3 404 handling
+        <behavior type="userfunc">tx_cooluri->pageNotFound</behavior>
       -->
     </pagenotfound>
   </cache>
