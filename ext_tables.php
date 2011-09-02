@@ -8,6 +8,7 @@ if (TYPO3_MODE == 'BE')	{
 
 $TCA['pages']['columns']['tx_realurl_pathsegment'] = array(
 	'label' => 'LLL:EXT:cooluri/locallang_db.php:pages.tx_cooluri_pathsegment',
+    'exclude' => 1,
 	'config' => Array (
 		'type' => 'input',
 		'size' => '30',
@@ -17,6 +18,7 @@ $TCA['pages']['columns']['tx_realurl_pathsegment'] = array(
 
 $TCA['pages']['columns']['tx_cooluri_exclude'] = array(
 	'label' => 'LLL:EXT:cooluri/locallang_db.php:pages.tx_cooluri_exclude',
+    'exclude' => 1,
 	'config' => Array (
 		'type' => 'check',
 		'default' => '0' 
@@ -25,6 +27,7 @@ $TCA['pages']['columns']['tx_cooluri_exclude'] = array(
 
 $TCA['pages']['columns']['tx_cooluri_excludealways'] = array(
 	'label' => 'LLL:EXT:cooluri/locallang_db.php:pages.tx_cooluri_excludealways',
+    'exclude' => 1,
 	'config' => Array (
 		'type' => 'check',
 		'default' => '0' 
