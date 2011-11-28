@@ -220,8 +220,7 @@ class tx_cooluri {
             return;
         }
 
-        $decodedUrl = strtr($params['LD']['totalURL'],array('%5B'=>'[','%5D' => ']'));
-
+        $decodedUrl = urldecode($params['LD']['totalURL']);
         $tu = explode('?',$decodedUrl);
         t3lib_div::devLog('PARAMS URL: '.$decodedUrl,'CoolUri');
 
