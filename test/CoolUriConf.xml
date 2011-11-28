@@ -57,6 +57,10 @@
         <t3conv>1</t3conv>
       </lookindb>
     </part>
+
+    <part>
+        <parameter>atParam[@atValue]</parameter>
+    </part>
   </uriparts>
   
   <predefinedparts>

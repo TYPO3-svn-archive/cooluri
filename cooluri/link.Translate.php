@@ -601,8 +601,7 @@ class Link_Translate {
         if (!empty(self::$conf->uriparts) && !empty(self::$conf->uriparts->part)) { // a path found
             $counter = 0;
             foreach (self::$conf->uriparts->part as $pp) {
-                $uf = FALSE;
-                if (!empty($params[(string)$pp->parameter])) {
+                if (isset($params[(string)$pp->parameter])) {
                     $uf = Link_Func::user_func($pp,$params[(string)$pp->parameter]);
                     if ($uf!==FALSE) {
                         $translatedpagepath[(string)$pp->parameter] = $uf;
@@ -712,7 +711,7 @@ class Link_Translate {
                 if (!empty($part['static']) && $part['static']==1 && empty($paramsinorder[(string)$part->value])) {
                     $tp .= (string)$part->value.Link_Func::getSeparator($part);
                 }
-                elseif (!empty($translatedpagepath[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
+                elseif (isset($translatedpagepath[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
                     $tp .= $translatedpagepath[(string)$part->parameter].Link_Func::getSeparator($part);
                     unset($params[(string)$part->parameter]);
                 }
