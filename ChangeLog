@@ -1,3 +1,9 @@
+CoolUri 1.0.28:
+- #31732: Added speaking URL to page language overlay, added validation
+- LL_db from PHP to XML - 4.6 compatibility fix
+- Zero value parameters translation fixed
+- #31706: Decode all special chars, not only []
+
 CoolUri 1.0.26:
 - Bug #28519: Encode and decode brackets because of 4.5.4
 - 301 redirect for redirectOldLinksToNew
