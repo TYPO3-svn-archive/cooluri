@@ -33,9 +33,10 @@ class tx_cooluritest_pi1 extends tslib_pibase {
         Array(24,'&array[k1]=foo&paramE=removed',Array('array'=>array('k3'=>'foo','k2'=>'bar','k5'=>123345))),
         Array(23,'&L=1',Array('add'=>1)),
         Array(23,'&L=1',Array('add'=>2)),
-        Array(25,'&paramD=view-list|page_id-142',Array()),
+        Array(25,'&paramD=view-list|page_id-142',Array('paramD'=>'view-list|page_id-142')),
         Array(25,'&atParam[@atValue]=ATVAL',Array('atParam' => array('@atValue' => 'ATVAL'))),
-        Array(22,'&paramA=0&paramD=0',Array('paramA'=>'0','paramD'=>'0'))
+        Array(22,'&paramA=0&paramD=0',Array('paramA'=>'0','paramD'=>'0')),
+        Array(25,'&paramX=view-list|page_id-142',Array('paramX'=>'view-list|page_id-142'))
     );
 
     function main($content, $conf) {
@@ -49,14 +50,18 @@ class tx_cooluritest_pi1 extends tslib_pibase {
 
         $links = Array();
         $links2 = Array();
+        $links3 = Array();
         foreach ($this->URLS as $url) {
             $links[] = $this->cObj->typolink_URL(Array('parameter'=>$url[0],'additionalParams'=>$url[1].$this->getToQS($url[2])));
             $t = $this->pi_linkToPage("foo",$url[0],'',$url[2]);
             $links2[] = preg_replace('~.*href="([^"]+)".*~','\\1',$t);
+            $links3[] = $this->cObj->typolink('Foo',Array('parameter'=>$url[0],'additionalParams'=>$url[1].$this->getToQS($url[2])));
         }
         $content = implode('<br />',$links);
         $content .= '<br /><br />';
         $content .= implode('<br />',$links2);
+        $content .= '<br /><br />';
+        $content .= implode('<br />',$links3);
 
         $params = array();
         foreach ($links as $i=>$l) {

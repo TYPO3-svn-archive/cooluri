@@ -124,9 +124,22 @@
         <xs:element name="removetrailingslash" type="boolean" minOccurs="0"/>
         <xs:element ref="paramorder" minOccurs="0"/>
         <xs:element ref="partorder" minOccurs="0"/>
+        <xs:element ref="domainlanguages" minOccurs="0" maxOccurs="1" />
       </xs:all>
     </xs:complexType>
   </xs:element>
+
+    <xs:element name="domainlanguages">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="domain" type="xs:string">
+                    <xs:complexType mixed="true">
+                        <xs:attribute name="lang" type="xs:integer"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
 
   <xs:element name="lookindb">
     <xs:complexType>
