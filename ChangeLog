@@ -1,3 +1,6 @@
+CoolUri 1.0.29:
+- Languages under different domains support
+
 CoolUri 1.0.28:
 - #31732: Added speaking URL to page language overlay, added validation
 - LL_db from PHP to XML - 4.6 compatibility fix
