@@ -41,7 +41,7 @@ $TCA['pages_language_overlay']['columns']['tx_realurl_pathsegment'] = array(
                 'type' => 'input',
                 'size' => '30',
                 'max' => '30',
-                'eval' => 'trim,nospace,lower,unique'
+                'eval' => 'trim,nospace,lower'
         )
 );
 

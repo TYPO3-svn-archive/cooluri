@@ -173,10 +173,19 @@ class tx_cooluri {
 
     private static function getShortcutpage($page) {
         $limit = 5;
-        while (!empty($page['shortcut_mode']) && $page['shortcut_mode']==1 && $page['doktype']==4 && $limit>0) {
-            $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','pages','pid='.(int)$page['uid'].$GLOBALS['TSFE']->cObj->enableFields('pages'),'','sorting','1');
+        $mode = $page['shortcut_mode'];
+        while (!empty($page['shortcut_mode']) && $mode > 0 && $page['doktype']==4 && $limit>0) {
+            switch ($mode) {
+                case 1: $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','pages','pid='.(int)$page['uid'].$GLOBALS['TSFE']->cObj->enableFields('pages'),'','sorting','1'); break;
+                case 2: $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','pages','1=1'.$GLOBALS['TSFE']->cObj->enableFields('pages'),'','RAND()','1'); break;
+                case 3: $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*','pages','uid='.(int)$page['pid'].$GLOBALS['TSFE']->cObj->enableFields('pages')); break;
+                default: $res = null;
+            }
             $tmp = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-            if ($tmp) $page = $tmp;
+            if ($tmp) {
+                $page = $tmp;
+                $mode = $page['shortcut_mode'];
+            }
             --$limit;
         }
         return $page;
@@ -207,7 +216,7 @@ class tx_cooluri {
                 $shortcut = $page['shortcut'];
                 --$limit;
             }
-        } elseif (!empty($params['args']['page']['shortcut_mode']) && $params['args']['page']['shortcut_mode']==1 && $params['args']['page']['doktype']==4) {
+        } elseif (!empty($params['args']['page']['shortcut_mode']) && $params['args']['page']['shortcut_mode'] > 0 && $params['args']['page']['doktype']==4) {
             $page = self::getShortcutpage($params['args']['page']);
             $params['args']['page'] = $page;
         }
@@ -224,6 +233,9 @@ class tx_cooluri {
         }
 
         $decodedUrl = urldecode($params['LD']['totalURL']);
+        
+        $decodedUrl = strtr($decodedUrl,array('|'=>'%7C'));
+        
         $tu = explode('?',$decodedUrl);
         t3lib_div::devLog('PARAMS URL: '.$decodedUrl,'CoolUri');
 
