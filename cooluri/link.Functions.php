@@ -106,6 +106,7 @@ class Link_Func {
   private static function replaceParameterInSQL($match) {
     $m = explode('=',$match[1]);
     $param = isset(self::$allparams[$m[0]])?self::$allparams[$m[0]]:(isset($m[1])?$m[1]:'');
+    $param = Link_DB::escape($param);
     return $param;
   }
 
@@ -113,25 +114,21 @@ class Link_Func {
     self::$allparams = $allparams;
 
     $param = Link_DB::escape($param);
-    $intparam = (int)$param;
 
-    if (($intparam.'')!=($param.'')) {
-        // not a number
-        $param = '\''.$param.'\'';
+    $pieces = explode('$1',$sql);
+    foreach ($pieces as $k=>$v) {
+        $pieces[$k] = preg_replace_callback('~\{([^}]+)\}~',array(self,'replaceParameterInSQL'),$v);
     }
+    $sql = implode($param,$pieces);
 
-    $sql = str_replace('$1',$param,(string)$sql);
-
-    $sql = preg_replace_callback('~\{([^}]+)\}~',array(self,'replaceParameterInSQL'),$sql);
-
-      $db = Link_DB::getInstance();
-      $res = $db->query($sql);
-      if (mysql_error() || !$res) return $param;
-      $row = $db->fetch_row($res);
-      if (!$row) return $param;
-      $val = $row[0];
-      $k = 1;
-      while (empty($val) && isset($row[$k])) {
+    $db = Link_DB::getInstance();
+    $res = $db->query($sql);
+    if (mysql_error() || !$res) return $param;
+    $row = $db->fetch_row($res);
+    if (!$row) return $param;
+    $val = $row[0];
+    $k = 1;
+    while (empty($val) && isset($row[$k])) {
       $val = $row[$k];
       ++$k;
     }

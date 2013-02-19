@@ -394,7 +394,7 @@ class tx_cooluri {
                 $parts = explode('?',$url);
                 if (empty($parts[0])) return;
 
-                if (self::$confArray['MULTIDOMAIN']) {
+                if (self::$confArray['MULTIDOMAIN'] || Link_Translate::$conf->domainlanguages) {
                     $url = explode('@',$url);
                     $url = 'http://'.$url[0].'/'.$url[1];
                 }

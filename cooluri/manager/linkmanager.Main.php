@@ -185,7 +185,7 @@ class LinkManger_Main {
     if (empty($_GET['l'])) {
       $let = '';
     } else {
-      $let = $this->db->escape($_GET['l']);
+      $let = $_GET['l'];
     }
 
     $c = '<h1>Cached links</h1>';
@@ -211,9 +211,9 @@ class LinkManger_Main {
 
     	if (!empty($_GET['domain'])) {
     		$let = str_replace('%','.*',$let);
-    		$q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE url RLIKE \'^[^@]*@?'.strtolower($let).'.*\' OR url RLIKE \'^[^@]*@?'.strtoupper($let).'.*\' ORDER BY url');
+    		$q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE LOWER(url) RLIKE '.$this->db->escape('^[^@]*@?'.strtolower($let).'.*').' ORDER BY url');
     	} else {
-    		$q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE url LIKE \''.strtolower($let).'%\' OR url LIKE \''.strtoupper($let).'%\' ORDER BY url');
+    		$q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE LOWER(url) LIKE '.$this->db->escape(strtolower($let).'%').' ORDER BY url');
     	}
 	    $num = $this->db->num_rows($q);
 	    if ($num>0) {
@@ -249,7 +249,7 @@ class LinkManger_Main {
     if (empty($_GET['l']))
       $let = '%';
     else
-      $let = $this->db->escape($_GET['l']);
+      $let = $_GET['l'];
 
     $c = '<h1>Old links</h1>';
 
@@ -269,7 +269,8 @@ class LinkManger_Main {
     </p>
     </form>';
 
-    $q = $this->db->query('SELECT o.id, o.url AS ourl, l.url AS lurl, o.tstamp FROM '.$this->table.'oldlinks AS o LEFT JOIN '.$this->table.'cache AS l ON l.id=o.link_id WHERE o.url LIKE \''.strtolower($let).'%\' OR o.url LIKE \''.strtoupper($let).'%\' ORDER BY o.url');
+    $q = $this->db->query('SELECT o.id, o.url AS ourl, l.url AS lurl, o.tstamp FROM '.$this->table.'oldlinks AS o LEFT JOIN '.$this->table.'cache AS l
+                            ON l.id=o.link_id WHERE LOWER(o.url) LIKE '.$this->db->escape(strtolower($let).'%').' ORDER BY o.url');
 
     $num = $this->db->num_rows($q);
     if ($num>0) {
@@ -349,7 +350,7 @@ class LinkManger_Main {
         }
         $temp = preg_replace('~/$~','',$data['url']);
         if ($temp==$data['url']) $temp .= '/';
-        $olq = $this->db->query('SELECT COUNT(*) FROM '.$this->table.'cache WHERE (url=\''.$this->db->escape($temp).'\' OR url=\''.$this->db->escape($data['url']).'\')'.($new?'':' AND id<>'.$id));
+        $olq = $this->db->query('SELECT COUNT(*) FROM '.$this->table.'cache WHERE (url='.$this->db->escape($temp).' OR url='.$this->db->escape($data['url']).')'.($new?'':' AND id<>'.$id));
         $num = $this->db->fetch_row($olq);
         if ($num[0]>0) {
           $c .= '<div class="error"><p>A different link with such URI exists already.</p></div>';
@@ -358,11 +359,11 @@ class LinkManger_Main {
 
         if ($new && $ok) {
           $q = $this->db->query('INSERT INTO '.$this->table.'cache(url,params,sticky,crdatetime)
-                                        VALUES(\''.$this->db->escape($data['url']).'\',
+                                        VALUES('.$this->db->escape($data['url']).',
                                         \''.$cp.'\',
                                         '.(!empty($data['sticky']) && $data['sticky']==1?1:0).',
                                         NOW())');
-          $this->db->query('DELETE FROM '.$this->table.'oldlinks WHERE url=\''.$this->db->escape($data['url']).'\'');
+          $this->db->query('DELETE FROM '.$this->table.'oldlinks WHERE url='.$this->db->escape($data['url']));
           if ($q) {
             $c .= '<div class="succes"><p>The new link was saved successfully.</p></div>';
             $c .= '<p class="center"><a href="'.$this->file.'?mod=cache&l='.htmlspecialchars($data['url']).'">Show &gt;&gt;</a></p>';
@@ -378,12 +379,12 @@ class LinkManger_Main {
                                         \''.$old['url'].'\')');
           }
           $qq = $this->db->query('UPDATE '.$this->table.'cache SET
-                                  url=\''.$this->db->escape($data['url']).'\',
+                                  url='.$this->db->escape($data['url']).',
                                   params=\''.$cp.'\',
                                   sticky='.(!empty($data['sticky']) && $data['sticky']==1?1:0).'
                                   WHERE id='.$id.' LIMIT 1
                                   ');
-          $this->db->query('DELETE FROM '.$this->table.'oldlinks WHERE url=\''.$this->db->escape($data['url']).'\'');
+          $this->db->query('DELETE FROM '.$this->table.'oldlinks WHERE url='.$this->db->escape($data['url']));
           if ($qq) {
             $c .= '<div class="succes"><p>The link was updated successfully.</p></div>';
             $c .= '<p class="center"><a href="'.$this->file.'?mod=cache&l='.htmlspecialchars($data['url']).'">Show &gt;&gt;</a></p>';
@@ -421,7 +422,7 @@ class LinkManger_Main {
       } else {
         $this->db->query('INSERT INTO '.$this->table.'oldlinks(link_id,url)
                                         VALUES('.$id.',
-                                        \''.$this->db->escape($_POST['url']).'\')');
+                                        '.$this->db->escape($_POST['url']).')');
         $c .= '<div class="succes"><p>The redirect was saved successfully.</p></div>';
       }
     }

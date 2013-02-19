@@ -105,7 +105,7 @@ class Link_Translate {
                 $tempurix = $tempuri[0];
             }
 
-            $q = $db->query('SELECT * FROM '.$tp.'cache WHERE url=\''.$db->escape($xuri).'\' OR url=\''.$db->escape($tempurix).'\'');
+            $q = $db->query('SELECT * FROM '.$tp.'cache WHERE url='.$db->escape($xuri).' OR url='.$db->escape($tempurix));
             $row = $db->fetch($q);
             if ($row) {
                 if (strcmp($row['url'],$xuri)!==0) { // we've got our $tempuri, not $url -> let's redirect
@@ -117,7 +117,7 @@ class Link_Translate {
                 $vf = '';
                 if (isset(self::$conf->cache->cool2params->oldlinksvalidfor))
                 $vf = ' AND DATEDIFF(NOW(),'.$tp.'oldlinks.tstamp)<'.(string)self::$conf->cache->cool2params->oldlinksvalidfor;
-                $q = $db->query('SELECT '.$tp.'cache.url AS oldlink FROM '.$tp.'oldlinks  LEFT JOIN '.$tp.'cache ON '.$tp.'oldlinks.link_id='.$tp.'cache.id WHERE ('.$tp.'oldlinks.url=\''.$db->escape($xuri).'\' OR '.$tp.'oldlinks.url=\''.$db->escape($tempurix).'\')'.$vf);
+                $q = $db->query('SELECT '.$tp.'cache.url AS oldlink FROM '.$tp.'oldlinks  LEFT JOIN '.$tp.'cache ON '.$tp.'oldlinks.link_id='.$tp.'cache.id WHERE ('.$tp.'oldlinks.url='.$db->escape($xuri).' OR '.$tp.'oldlinks.url='.$db->escape($tempurix).')'.$vf);
                 $row = $db->fetch($q);
                 if ($row) {
                     Link_Func::redirect(Link_Func::prepareforRedirect($row['oldlink'].(empty($tempuri[1])?'':'?'.$tempuri[1]),self::$conf),301);
@@ -472,7 +472,7 @@ class Link_Translate {
                 $originalparams = Link_Func::array_intersect_key($originalparams,self::$coolParamsKeys);
             }
             $cacheQ = Link_Func::prepareParamsForCache($originalparams,$tp);
-            $q = $db->query('SELECT *, DATEDIFF(NOW(),tstamp) AS daydiff FROM '.$tp.'cache WHERE params=\''.$cacheQ.'\'');
+            $q = $db->query('SELECT *, DATEDIFF(NOW(),tstamp) AS daydiff FROM '.$tp.'cache WHERE params='.$cacheQ);
             $row = $db->fetch($q);
 
             if ($row) {
@@ -786,18 +786,18 @@ class Link_Translate {
                     $db->query('UPDATE '.$tp.'cache SET tstamp=NOW() WHERE id='.(int)$updatecacheid);
                     if ($cacheduri!=$path.$p) {
                         // uri is changed, we need to move the old one to the old links
-                        $db->query('INSERT INTO '.$tp.'oldlinks(link_id,url) VALUES('.(int)$updatecacheid.',\''.$db->escape($cacheduri).'\')');
-                        $db->query('UPDATE '.$tp.'cache SET url=\''.$db->escape($path.$p).'\' WHERE id='.(int)$updatecacheid);
+                        $db->query('INSERT INTO '.$tp.'oldlinks(link_id,url) VALUES('.(int)$updatecacheid.','.$db->escape($cacheduri).')');
+                        $db->query('UPDATE '.$tp.'cache SET url='.$db->escape($path.$p).' WHERE id='.(int)$updatecacheid);
 
                         // if the path has changed back, no need to store it in the oldlinks
                         // prevets from overflooding the DB when tampering with configuration
-                        $db->query('DELETE FROM '.$tp.'oldlinks WHERE url=\''.$db->escape($path.$p).'\'');
+                        $db->query('DELETE FROM '.$tp.'oldlinks WHERE url='.$db->escape($path.$p));
 
                     }
                 } else {
-                    $res = $db->query('SELECT * FROM '.$tp.'cache WHERE url=\''.$db->escape($path.$p).'\'');
+                    $res = $db->query('SELECT * FROM '.$tp.'cache WHERE url='.$db->escape($path.$p));
                     if ($db->num_rows($res)==0) {
-                       $db->query('INSERT INTO '.$tp.'cache(url,params,crdatetime) VALUES(\''.$db->escape($path.$p).'\',\''.Link_Func::prepareParamsForCache($originalparams).'\',NOW())');
+                       $db->query('INSERT INTO '.$tp.'cache(url,params,crdatetime) VALUES('.$db->escape($path.$p).','.Link_Func::prepareParamsForCache($originalparams).',NOW())');
                     }
                 }
             }

@@ -45,7 +45,7 @@ public function fetch_row($res) {
 }
 
 public static function escape($string,$tp = 'link_') {
-  return $GLOBALS['TYPO3_DB']->quoteStr($string,$tp.'cache');
+  return $GLOBALS['TYPO3_DB']->fullQuoteStr($string,$tp.'cache');
 }
 
 public function error() {
