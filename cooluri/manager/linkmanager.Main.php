@@ -342,7 +342,7 @@ class LinkManger_Main {
         $cp = Link_Func::prepareParamsForCache($params);
 
         $ok = true;
-        $olq = $this->db->query('SELECT COUNT(*) FROM '.$this->table.'cache WHERE params=\''.$cp.'\''.($new?'':' AND id<>'.$id));
+        $olq = $this->db->query('SELECT COUNT(*) FROM '.$this->table.'cache WHERE params='.$cp.($new?'':' AND id<>'.$id));
         $num = $this->db->fetch_row($olq);
         if ($num[0]>0) {
           $c .= '<div class="error"><p>A different link with such parameters exists already.</p></div>';
@@ -360,7 +360,7 @@ class LinkManger_Main {
         if ($new && $ok) {
           $q = $this->db->query('INSERT INTO '.$this->table.'cache(url,params,sticky,crdatetime)
                                         VALUES('.$this->db->escape($data['url']).',
-                                        \''.$cp.'\',
+                                        '.$cp.',
                                         '.(!empty($data['sticky']) && $data['sticky']==1?1:0).',
                                         NOW())');
           $this->db->query('DELETE FROM '.$this->table.'oldlinks WHERE url='.$this->db->escape($data['url']));
@@ -380,7 +380,7 @@ class LinkManger_Main {
           }
           $qq = $this->db->query('UPDATE '.$this->table.'cache SET
                                   url='.$this->db->escape($data['url']).',
-                                  params=\''.$cp.'\',
+                                  params='.$cp.',
                                   sticky='.(!empty($data['sticky']) && $data['sticky']==1?1:0).'
                                   WHERE id='.$id.' LIMIT 1
                                   ');
