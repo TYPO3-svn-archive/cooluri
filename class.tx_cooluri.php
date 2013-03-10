@@ -378,7 +378,10 @@ class tx_cooluri
         if (empty($_GET['ADMCMD_prev']) && $GLOBALS['TSFE']->config['config']['tx_cooluri_enable'] == 1 && $GLOBALS['TSFE']->config['config']['redirectOldLinksToNew'] == 1 && t3lib_div::getIndpEnv('REQUEST_URI') && (substr(t3lib_div::getIndpEnv('REQUEST_URI'), 1, 9) == 'index.php' || substr(t3lib_div::getIndpEnv('REQUEST_URI'), 1, 1) == '?')) {
             $ourl = t3lib_div::getIndpEnv('REQUEST_URI');
             $ss = explode('?', $ourl);
-            if ($ss[1]) $pars = Link_Func::convertQuerystringToArray($ss[1]);
+            if ($ss[1]) {
+                $ss[1] = strtr($ss[1], array('%5B' => '[', '%5D' => ']'));
+                $pars = Link_Func::convertQuerystringToArray($ss[1]);
+            }
 
             $pageid = $pars['id'];
             if (!ctype_digit($pageid)) {
@@ -409,7 +412,6 @@ class tx_cooluri
                         Link_Translate::$conf->cache->prefix = self::getDomain((int)$pars['id']) . '@';
                     }
                 }
-
                 $url = $lt->params2coolForRedirect($pars);
 
                 $parts = explode('?', $url);
