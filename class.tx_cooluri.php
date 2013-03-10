@@ -104,8 +104,8 @@ class tx_cooluri
                     self::simplexml_addChild(Link_Translate::$conf->cache, 'prefix', $domain . '@');
                     t3lib_div::devLog('DOMAIN: ' . $domain, 'CoolUri');
                 } else {
-                    Link_Translate::$conf->cache->prefix = $_SERVER['SERVER_NAME'] . '@';
-                    t3lib_div::devLog('DOMAIN 2: ' . $_SERVER['SERVER_NAME'], 'CoolUri');
+                    Link_Translate::$conf->cache->prefix = t3lib_div::getIndpEnv('HTTP_HOST') . '@';
+                    t3lib_div::devLog('DOMAIN 2: ' . t3lib_div::getIndpEnv('HTTP_HOST'), 'CoolUri');
                 }
             }
 
@@ -310,9 +310,9 @@ class tx_cooluri
                     unset($params['LD']['totalURL'][0]);
                     $afterat = implode('@', $params['LD']['totalURL']);
 
-                    t3lib_div::devLog('In the same domain: ' . $beforeat . '==' . $_SERVER['SERVER_NAME'], 'CoolUri');
+                    t3lib_div::devLog('In the same domain: ' . $beforeat . '==' . t3lib_div::getIndpEnv('HTTP_HOST'), 'CoolUri');
 
-                    if ($beforeat == $_SERVER['SERVER_NAME']) {
+                    if ($beforeat == t3lib_div::getIndpEnv('HTTP_HOST')) {
                         $params['LD']['totalURL'] = $afterat;
                     } else {
                         $params['LD']['totalURL'] = 'http://' . $beforeat . '/' . $afterat;
@@ -361,16 +361,16 @@ class tx_cooluri
             }
 
             if ($count['num'] > 0 || $page['is_siteroot'] == 1) {
-                t3lib_div::devLog('Domain missing for ID ' . $id . ', using SERVER_NAME ' . $_SERVER['SERVER_NAME'], 'CoolUri');
-                return $_SERVER['SERVER_NAME'];
+                t3lib_div::devLog('Domain missing for ID ' . $id . ', using HTTP_HOST ' . t3lib_div::getIndpEnv('HTTP_HOST'), 'CoolUri');
+                return t3lib_div::getIndpEnv('HTTP_HOST');
             }
 
 
             $id = $page['pid'];
             --$max;
         }
-        t3lib_div::devLog('Domain not found, using SERVER_NAME ' . $_SERVER['SERVER_NAME'], 'CoolUri', 2);
-        return $_SERVER['SERVER_NAME'];
+        t3lib_div::devLog('Domain not found, using HTTP_HOST ' . t3lib_div::getIndpEnv('HTTP_HOST'), 'CoolUri', 2);
+        return t3lib_div::getIndpEnv('HTTP_HOST');
     }
 
     public static function goForRedirect($params, $ref)
