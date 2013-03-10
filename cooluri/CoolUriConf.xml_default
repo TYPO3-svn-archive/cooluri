@@ -126,6 +126,13 @@
       <value key="en">1</value>
     </valuemap>
   </valuemaps>
+
+  <!--
+    NEW - default value when a parameter is not set (tests "isset", not "empty")
+  <defaults>
+    <value key="L">de</value>
+  </defaults>
+  -->
   
   <!-- this will put L param to the first position
       for more magic see manual -->

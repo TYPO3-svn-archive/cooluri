@@ -22,5 +22,6 @@ require_once 'link.DBLayer.php';
 require_once 'link.DB.php';
 require_once 'link.Exception.php';
 require_once 'link.Log.php';
+require_once 'link.URI.php';
 
 ?>

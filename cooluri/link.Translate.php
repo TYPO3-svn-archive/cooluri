@@ -428,33 +428,34 @@ class Link_Translate {
                     return $uriFromCache;
                 }
             }
-            $originalparams = $params;
-            $predefparts = $this->translatePredefinedParams($params,$originalparams);
-            $predefparts = array_merge($predefparts, $this->translateValuemaps($params));
-            // now the pagepath
-            $translatedpagepath = Array();
-            $pagepath = Array();
-            $this->translatePagepath($params, $pagepath, $translatedpagepath, $originalparams);
-            $this->translateUriparts($params, $pagepath, $translatedpagepath, $originalparams);
-            $statics = $this->getStatics();
+
+            $uri = new URI($params);
+            $this->translateDefaults($uri);
+            $this->translatePredefinedParams($uri);
+            $this->translateValuemaps($uri);
+
+            $this->translatePagepath($uri);
+            $this->translateUriparts($uri);
+            $uri->statics = $this->getStatics();
             // we need list of separators
-            $seps = $this->getSeparators();
-            $paramsinorder = Array();
-            $path = $this->getPath($paramsinorder,$predefparts,$translatedpagepath,$statics,$seps);
-            $vm = $this->getAppendedValuemaps($predefparts, $params, $paramsinorder);
-            $pp = $this->getAppendedPredefinedparts($predefparts, $params, $paramsinorder);
-            $tp = $this->getAppendedUriparts($params, $paramsinorder, $translatedpagepath);
-            $pagep = $this->getAppendedPagepath($pagepath);
+            $uri->separators = $this->getSeparators();
+
+            $path = $this->getPath($uri);
+
+            $df = $this->getAppendedDefaults($uri);
+            $vm = $this->getAppendedValuemaps($uri);
+            $pp = $this->getAppendedPredefinedparts($uri);
+            $tp = $this->getAppendedUriparts($uri);
+            $pagep = $this->getAppendedPagepath($uri);
             $partorder = $this->getPartOrder();
-            $path = $this->getSortedPath($path,$partorder,$tp,$vm,$pp,$pagep);
-            $path = $this->saveInCache($params,$path,$originalparams,$updatecacheid,$cacheduri,$entityampersand);
-            $params = $this->transformParamsToQS($params, $entityampersand);            
-            return Link_Func::prepareforOutput($path,self::$conf).(empty($params)?'':$params);
+
+            $path = $this->getSortedPath($path,$partorder,$tp,$vm,$pp,$pagep,$df);
+            $path = $this->saveInCache($uri->params,$path,$uri->originalparams,$updatecacheid,$cacheduri,$entityampersand);
+            return Link_Func::prepareforOutput($path,self::$conf).$this->transformParamsToQS($uri->params, $entityampersand);
         } else {
             return (empty($file)?$_SERVER['PHP_SELF']:$file).(empty($params)?'':'?'.http_build_query($params,'',$entityampersand?'&amp;':'&'));
         }
     }
-
 
     private function getCachedUri($params, $forceUpdate) {
         if (!empty(self::$conf->cache) && !empty(self::$conf->cache->usecache) && self::$conf->cache->usecache==1) {
@@ -502,52 +503,68 @@ class Link_Translate {
         return null;
     }
 
-    private function translatePredefinedParams(&$params,&$originalparams) {
-        $predefparts = Array();
-        if (!empty(self::$conf->predefinedparts) && !empty(self::$conf->predefinedparts->part)) {
-
-            // first let's translate predefenied params
-            foreach (self::$conf->predefinedparts->part as $ppart) {
-                if (isset($params[(string)$ppart->parameter])) {
-                    $uf = Link_Func::user_func($ppart,$params[(string)$ppart->parameter]);
-                    if ($uf!==FALSE) {
-                        $predefparts[(string)$ppart->parameter] = $uf;
-                    } elseif (!empty($ppart['regexp']) && $ppart['regexp']==1) {
-                        $predefparts[(string)$ppart->parameter] = preg_replace('~\([^)]+\)~',empty($ppart->lookindb)?$params[(string)$ppart->parameter]:Link_Func::lookindb($ppart->lookindb->to,$params[(string)$ppart->parameter],$ppart->lookindb,$originalparams),$ppart['key']);
-                    } elseif ($ppart->value==$params[(string)$ppart->parameter]) {
-                        $predefparts[(string)$ppart->parameter] = empty($ppart->lookindb)?(string)$ppart['key']:Link_Func::lookindb($ppart->lookindb->to,$params[(string)$ppart->parameter],$ppart->lookindb,$originalparams);
-                    }
-                    unset($params[(string)$ppart->parameter]);
+    private function translateDefaults(URI $uri) {
+        if (!empty(self::$conf->defaults) && !empty(self::$conf->defaults->value)) {
+            foreach (self::$conf->defaults->value as $value) {
+                if (!isset($uri->params[(string)$value['key']])) {
+                    $uri->predefparts[(string)$value['key']] = (string)$value;
                 }
             }
-        } // end predefinedparts
-        return $predefparts;
+        }
     }
 
-    private function translateValuemaps(&$params) {
-        //valuemaps (iterate thru values in maps)
-        $predefparts = Array();
+    /**
+     * Translates element <predefinedparts>
+     *
+     * @param URI $uri
+     * @return mixed
+     */
+    private function translatePredefinedParams(URI $uri) {
+        if (!empty(self::$conf->predefinedparts) && !empty(self::$conf->predefinedparts->part)) {
+
+            foreach (self::$conf->predefinedparts->part as $ppart) {
+                if (isset($params[(string)$ppart->parameter])) {
+                    $value = $uri->params[(string)$ppart->parameter];
+                    $uf = Link_Func::user_func($ppart, $value);
+                    if ($uf!==FALSE) {
+                        $uri->predefparts[(string)$ppart->parameter] = $uf;
+                    } elseif (!empty($ppart['regexp']) && $ppart['regexp']==1) {
+                        $uri->predefparts[(string)$ppart->parameter] = preg_replace('~\([^)]+\)~',empty($ppart->lookindb)? $value :
+                                    Link_Func::lookindb($ppart->lookindb->to, $value,$ppart->lookindb,$uri->originalparams),$ppart['key']);
+                    } elseif ($ppart->value== $value) {
+                        $uri->predefparts[(string)$ppart->parameter] = empty($ppart->lookindb)?(string)$ppart['key']:Link_Func::lookindb($ppart->lookindb->to, $value,$ppart->lookindb,$uri->originalparams);
+                    }
+                    unset($uri->params[(string)$ppart->parameter]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Translates element <valuemaps>
+     * @param URI $uri
+     */
+    private function translateValuemaps(URI $uri) {
         if (!empty(self::$conf->valuemaps) && !empty(self::$conf->valuemaps->valuemap)) {
             foreach (self::$conf->valuemaps->valuemap as $vm) {
-                if (isset($params[(string)$vm->parameter])) {
+                if (isset($uri->params[(string)$vm->parameter])) {
                     foreach ($vm->value as $val) {
-                        if ((string)$val==$params[(string)$vm->parameter]) {
-                            $predefparts[(string)$vm->parameter] = (string)$val['key']; // let's just add it to the predeparts array
-                            unset($params[(string)$vm->parameter]);
+                        if ((string)$val==$uri->params[(string)$vm->parameter]) {
+                            $uri->predefparts[(string)$vm->parameter] = (string)$val['key']; // let's just add it to the predeparts array
+                            unset($uri->params[(string)$vm->parameter]);
                         }
                     }
                 }
             }
         }
-        return $predefparts;
     }
 
-    private function translatePagepath(&$params, &$pagepath, &$translatedpagepath,&$originalparams) {
-        if (!empty(self::$conf->pagepath) && !empty(self::$conf->pagepath->saveto) && !empty($params[(string)self::$conf->pagepath->saveto])) {
+    private function translatePagepath(URI $uri) {
+        if (!empty(self::$conf->pagepath) && !empty(self::$conf->pagepath->saveto) && !empty($uri->params[(string)self::$conf->pagepath->saveto])) {
 
-            $uf = Link_Func::user_func(self::$conf->pagepath,$originalparams);
+            $uf = Link_Func::user_func(self::$conf->pagepath,$uri->originalparams);
             if ($uf===FALSE) {
-                $curid = $params[(string)self::$conf->pagepath->saveto];
+                $curid = $uri->params[(string)self::$conf->pagepath->saveto];
                 $result = true;
                 $lastpid = null;
                 $db = Link_DB::getInstance();
@@ -558,7 +575,7 @@ class Link_Translate {
                     else $sel = (string)self::$conf->pagepath->alias;
 
                     $sql = 'SELECT '.(string)self::$conf->pagepath->connection.','.$sel.'
-                            FROM '.(string)self::$conf->pagepath->table.' WHERE '.(string)self::$conf->pagepath->id.'='.$db->escape($lastpid==null?$params[(string)self::$conf->pagepath->saveto]:$lastpid);
+                            FROM '.(string)self::$conf->pagepath->table.' WHERE '.(string)self::$conf->pagepath->id.'='.$db->escape($lastpid==null?$uri->params[(string)self::$conf->pagepath->saveto]:$lastpid);
                     if (!empty(self::$conf->pagepath->additionalWhere)) {
                         $sql .= ' '.(string)self::$conf->pagepath->additionalWhere;
                     }
@@ -580,42 +597,41 @@ class Link_Translate {
                             ++$k;
                         }
                         if (!empty(self::$conf->sanitize) && self::$conf->sanitize==1) {
-                            $pagepath[] = Link_Func::sanitize_title_with_dashes($val);
+                            $uri->pagepath[] = Link_Func::sanitize_title_with_dashes($val);
                         } else {
-                            $pagepath[] = Link_Func::URLize($val);
+                            $uri->pagepath[] = Link_Func::URLize($val);
                         }
 
-                    } else
-                    $pagepath[] = $row[1];
+                    } else {
+                        $uri->pagepath[] = $row[1];
+                    }
                     $lastpid = $row[0];
                 }
             } else {
-                $pagepath = $uf;
+                $uri->pagepath = $uf;
             }
-            unset($params[(string)self::$conf->pagepath->saveto]);
-            $pagepath = array_reverse($pagepath);
-        } // end pagepath
+            unset($uri->params[(string)self::$conf->pagepath->saveto]);
+            $uri->pagepath = array_reverse($uri->pagepath);
+        }
     }
 
-    private function translateUriparts(&$params, &$pagepath, &$translatedpagepath,&$originalparams) {
+    private function translateUriparts(URI $uri) {
         if (!empty(self::$conf->uriparts) && !empty(self::$conf->uriparts->part)) { // a path found
             $counter = 0;
             foreach (self::$conf->uriparts->part as $pp) {
-                if (isset($params[(string)$pp->parameter])) {
-                    $uf = Link_Func::user_func($pp,$params[(string)$pp->parameter]);
+                if (isset($uri->params[(string)$pp->parameter])) {
+                    $uf = Link_Func::user_func($pp,$uri->params[(string)$pp->parameter]);
                     if ($uf!==FALSE) {
-                        $translatedpagepath[(string)$pp->parameter] = $uf;
+                        $uri->translatedpagepath[(string)$pp->parameter] = $uf;
                     } else {
-                        $translatedpagepath[(string)$pp->parameter] = (empty($pp->lookindb)?$params[(string)$pp->parameter]:Link_Func::lookindb($pp->lookindb->to,$params[(string)$pp->parameter],$pp->lookindb,$originalparams));
+                        $uri->translatedpagepath[(string)$pp->parameter] = (empty($pp->lookindb)?$uri->params[(string)$pp->parameter]:Link_Func::lookindb($pp->lookindb->to,$uri->params[(string)$pp->parameter],$pp->lookindb,$uri->originalparams));
                     }
-                    unset($params[(string)$pp->parameter]);
-                } elseif (!empty($pp['pagepath']) && $pp['pagepath']==1 && !empty($pagepath[$counter])) {
-                    //if (!empty($pagepath[$counter])) {
-                    $translatedpagepath[(string)$pp->parameter] = $pagepath[$counter];
-                    unset($pagepath[$counter]);
+                    unset($uri->params[(string)$pp->parameter]);
+                } elseif (!empty($pp['pagepath']) && $pp['pagepath']==1 && !empty($uri->pagepath[$counter])) {
+                    $uri->translatedpagepath[(string)$pp->parameter] = $uri->pagepath[$counter];
+                    unset($uri->pagepath[$counter]);
                     ++$counter;
                 }
-
             }
         }
     }
@@ -636,6 +652,11 @@ class Link_Translate {
 
     private function getSeparators() {
         $seps = Array();
+        if (!empty(self::$conf->defaults) && !empty(self::$conf->defaults->value)) {
+            foreach (self::$conf->defaults->value as $part) {
+                $seps[(string)$part['key']] = Link_Func::getSeparator($part);
+            }
+        }
         if (!empty(self::$conf->predefinedparts) && !empty(self::$conf->predefinedparts->part)) {
             foreach (self::$conf->predefinedparts->part as $part) {
                 $seps[(string)$part->parameter] = Link_Func::getSeparator($part);
@@ -659,74 +680,89 @@ class Link_Translate {
         return $seps;
     }
 
-    private function getPath(&$paramsinorder,$predefparts,$translatedpagepath,$statics,$seps) {
+    private function getPath(URI $uri) {
         $path = '';
         if (!empty(self::$conf->paramorder) && !empty(self::$conf->paramorder->param)) {
             foreach (self::$conf->paramorder->param as $par) {
-                $paramsinorder[(string)$par] = true;
-                if (!empty($predefparts[(string)$par])) {
-                    $path .= $predefparts[(string)$par].$seps[(string)$par];
-                } elseif (!empty($translatedpagepath[(string)$par])) {
-                    $path .= $translatedpagepath[(string)$par].$seps[(string)$par];
-                } elseif (!empty($statics[(string)$par])) {
-                    $path .= $statics[(string)$par].$seps[(string)$par];
+                $uri->paramsinorder[(string)$par] = true;
+                if (!empty($uri->predefparts[(string)$par])) {
+                    $path .= $uri->predefparts[(string)$par].$uri->separators[(string)$par];
+                } elseif (!empty($uri->translatedpagepath[(string)$par])) {
+                    $path .= $uri->translatedpagepath[(string)$par].$uri->separators[(string)$par];
+                } elseif (!empty($uri->statics[(string)$par])) {
+                    $path .= $uri->statics[(string)$par].$uri->separators[(string)$par];
                 }
             }
         }
         return $path;
     }
 
-    private function getAppendedValuemaps(&$predefparts, &$params, &$paramsinorder) {
+    private function getAppendedDefaults(URI $uri) {
+        $df = '';
+        if (!empty(self::$conf->defaults) && !empty(self::$conf->defaults->value)) {
+            foreach (self::$conf->defaults->value as $value) {
+                $key = (string)$value['key'];
+                if (!empty($uri->predefparts[$key]) && empty($uri->paramsinorder[$key])) {
+                    $df .= $uri->predefparts[$key].Link_Func::getSeparator($value);
+                    unset($uri->predefparts[$key]);
+                }
+            }
+        }
+        return $df;
+    }
+
+    private function getAppendedValuemaps(URI $uri) {
         $vm = '';
         if (!empty(self::$conf->valuemaps) && !empty(self::$conf->valuemaps->valuemap)) {
             foreach (self::$conf->valuemaps->valuemap as $part) {
-                if (!empty($predefparts[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
-                    $vm .= $predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
-                    unset($predefparts[(string)$part->parameter]);
-                    unset($params[(string)$part->parameter]);
+                if (!empty($uri->predefparts[(string)$part->parameter]) && empty($uri->paramsinorder[(string)$part->parameter])) {
+                    $vm .= $uri->predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
+                    unset($uri->predefparts[(string)$part->parameter]);
+                    unset($uri->params[(string)$part->parameter]);
                 }
             }
         }
         return $vm;
     }
 
-    private function getAppendedPredefinedparts(&$predefparts, &$params, &$paramsinorder) {
+    private function getAppendedPredefinedparts(URI $uri) {
         $pp = '';
         if (!empty(self::$conf->predefinedparts) && !empty(self::$conf->predefinedparts->part)) {
             foreach (self::$conf->predefinedparts->part as $part) {
-                if (!empty($predefparts[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
-                    $pp .= $predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
-                    unset($predefparts[(string)$part->parameter]);
-                    unset($params[(string)$part->parameter]);
+                if (!empty($uri->predefparts[(string)$part->parameter]) && empty($uri->paramsinorder[(string)$part->parameter])) {
+                    $pp .= $uri->predefparts[(string)$part->parameter].Link_Func::getSeparator($part);
+                    unset($uri->predefparts[(string)$part->parameter]);
+                    unset($uri->params[(string)$part->parameter]);
                 }
             }
         }
         return $pp;
     }
 
-    private function getAppendedUriparts(&$params, &$paramsinorder, &$translatedpagepath) {
+    private function getAppendedUriparts(URI $uri) {
         $tp = '';
         if (!empty(self::$conf->uriparts) && !empty(self::$conf->uriparts->part)) {
             foreach (self::$conf->uriparts->part as $part) {
-                if (!empty($part['static']) && $part['static']==1 && empty($paramsinorder[(string)$part->value])) {
+                if (!empty($part['static']) && $part['static']==1 && empty($uri->paramsinorder[(string)$part->value])) {
                     $tp .= (string)$part->value.Link_Func::getSeparator($part);
                 }
-                elseif (isset($translatedpagepath[(string)$part->parameter]) && empty($paramsinorder[(string)$part->parameter])) {
-                    $tp .= $translatedpagepath[(string)$part->parameter].Link_Func::getSeparator($part);
-                    unset($params[(string)$part->parameter]);
+                elseif (isset($uri->translatedpagepath[(string)$part->parameter]) && empty($uri->paramsinorder[(string)$part->parameter])) {
+                    $tp .= $uri->translatedpagepath[(string)$part->parameter].Link_Func::getSeparator($part);
+                    unset($uri->params[(string)$part->parameter]);
                 }
             }
         }
         return $tp;
     }
 
-    private function getSortedPath($path,$partorder,$tp,$vm,$pp,$pagep) {
+    private function getSortedPath($path,$partorder,$tp,$vm,$pp,$pagep,$df) {
         foreach ($partorder as $p) {
             switch ($p) {
                 case 'uriparts': $path .= $tp; break;
                 case 'valuemaps': $path .= $vm; break;
                 case 'predefinedparts': $path .= $pp; break;
                 case 'pagepath': $path .= $pagep; break;
+                case 'defaults': $path .= $df; break;
             }
         }
         return $path;
@@ -739,7 +775,7 @@ class Link_Translate {
                 $partorder[] = (string)$p;
             }
         } else {
-            $partorder = Array('pagepath','uriparts','valuemaps','predefinedparts');
+            $partorder = Array('pagepath','uriparts','valuemaps','predefinedparts','defaults');
         }
         return $partorder;
     }
@@ -754,11 +790,11 @@ class Link_Translate {
         return '';
     }
 
-    private function getAppendedPagepath($pagepath) {
+    private function getAppendedPagepath(URI $uri) {
         // if pagepath is not empty, that means not all pagepaths were added to $translatepagepath. We'll just add it
         $pagep = '';
-        if (!empty(self::$conf->pagepath) && !empty(self::$conf->pagepath->saveto) && !empty($pagepath)) {
-            $pagep = implode(Link_Func::getSeparator(),$pagepath).Link_Func::getSeparator();
+        if (!empty(self::$conf->pagepath) && !empty(self::$conf->pagepath->saveto) && !empty($uri->pagepath)) {
+            $pagep = implode(Link_Func::getSeparator(),$uri->pagepath).Link_Func::getSeparator();
         }
         return $pagep;
     }
