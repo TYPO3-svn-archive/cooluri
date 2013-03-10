@@ -273,6 +273,20 @@ class tx_cooluri
                 t3lib_div::devLog('MultiDomain on', 'CoolUri');
                 if (!empty($params['LD']['domain'])) {
                     $domain = $params['LD']['domain'];
+                } elseif (!empty($pars['MP'])) {
+                    // found MP call get ID of page which mounts
+                    $mpSource = (int)substr($pars['MP'], strpos($pars['MP'], '-') + 1);
+                    // and of page which is mounted
+                    $mpTarget = (int)substr($pars['MP'], 0, strpos($pars['MP'], '-'));
+                    $mpTargetDomain = self::getDomain($mpTarget);
+                    $defaultDomain = self::getDomain((int)$pars['id']);
+                    // now if a link should be generated to the page which is mounted, domain which mounts should be used
+                    if ($mpTargetDomain == $defaultDomain) {
+                        $domain = self::getDomain($mpSource);
+                    }
+                    else {
+                        $domain = $defaultDomain;
+                    }
                 } else {
                     $domain = self::getDomain((int)$pars['id']);
                 }
