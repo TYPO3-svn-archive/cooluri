@@ -397,8 +397,6 @@ class tx_cooluri
                 return;
             }
 
-            $params = Array();
-
             if ($pars) {
                 $lt = self::getTranslateInstance();
 
