@@ -463,6 +463,14 @@ class tx_cooluri
 
         $pagepath = Array();
 
+        // If a Mount Point variable has been passed then determine the original id
+        if (!empty($value['MP'])) {
+            $_mp_parts = explode('-',$value['MP']);
+            if ((!empty($_mp_parts[1])) && (is_numeric($_mp_parts[1]))) {
+                $id = $_mp_parts[1];
+            }
+        }
+
         if (empty($conf->alias)) {
             $sel = (string)$conf->title;
         } else {
