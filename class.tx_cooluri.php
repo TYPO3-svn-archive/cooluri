@@ -89,7 +89,7 @@ class tx_cooluri
             if (self::$confArray['MULTIDOMAIN'] || Link_Translate::$conf->domainlanguages) {
                 t3lib_div::devLog('MultiDomain on', 'CoolUri');
                 if (empty(Link_Translate::$conf->cache->prefix)) {
-                    $domain = $_SERVER['SERVER_NAME'];
+                    $domain = t3lib_div::getIndpEnv('HTTP_HOST');
                     $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'sys_domain', 'domainName=\'' . $domain . '\' AND redirectTo<>\'\' AND hidden=0');
                     $row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
                     if ($row) {
