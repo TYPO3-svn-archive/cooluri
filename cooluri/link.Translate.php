@@ -525,7 +525,7 @@ class Link_Translate {
             foreach (self::$conf->predefinedparts->part as $ppart) {
                 if (isset($params[(string)$ppart->parameter])) {
                     $value = $uri->params[(string)$ppart->parameter];
-                    $uf = Link_Func::user_func($ppart, $value);
+                    $uf = Link_Func::user_func($ppart, $value, $uri->originalparams);
                     if ($uf!==FALSE) {
                         $uri->predefparts[(string)$ppart->parameter] = $uf;
                     } elseif (!empty($ppart['regexp']) && $ppart['regexp']==1) {
@@ -620,7 +620,7 @@ class Link_Translate {
             $counter = 0;
             foreach (self::$conf->uriparts->part as $pp) {
                 if (isset($uri->params[(string)$pp->parameter])) {
-                    $uf = Link_Func::user_func($pp,$uri->params[(string)$pp->parameter]);
+                    $uf = Link_Func::user_func($pp,$uri->params[(string)$pp->parameter],$uri->originalparams);
                     if ($uf!==FALSE) {
                         $uri->translatedpagepath[(string)$pp->parameter] = $uf;
                     } else {

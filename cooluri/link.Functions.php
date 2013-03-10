@@ -310,11 +310,11 @@ class Link_Func {
       call_user_func($uf);
   }
 
-  public static function user_func($lConf,$value) {
+  public static function user_func($lConf,$value,$params = null) {
     if (!empty($lConf->userfunc)) {
       $uf = explode('->',(string)$lConf->userfunc);
       if (!isset($uf[1])) $uf = $uf[0];
-      $res = call_user_func($uf,$lConf,$value);
+      $res = call_user_func($uf,$lConf,$value,$params);
       return $res;
     }
     return FALSE;
