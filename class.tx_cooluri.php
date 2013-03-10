@@ -299,7 +299,7 @@ class tx_cooluri
             // urlencode stuff after ?
             $parts = explode('?', $params['LD']['totalURL']);
             if (isset($parts[1])) {
-                $parts[1] = strtr($parts[1], array('[' => '%5B', ']' => '%5D'));
+                $parts[1] = strtr($parts[1], array('[' => '%5B', ']' => '%5D', '|'=>'%7C'));
             }
             $params['LD']['totalURL'] = implode('?', $parts);
 
