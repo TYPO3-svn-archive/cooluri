@@ -28,8 +28,9 @@ class tx_cooluritest_pi1 extends tslib_pibase {
 
     var $URLS = Array(
         Array(22,'&paramD=100',Array()),
-        Array(24,'',Array('paramZ'=>100)),
-        Array(24,'',Array('paramZ'=>200)),
+        Array(24,'',Array()),
+        Array(22,'',Array('paramZ'=>100)),
+        Array(22,'',Array('paramZ'=>200)),
         Array(24,'&array[k1]=foo&paramE=removed',Array('array'=>array('k3'=>'foo','k2'=>'bar','k5'=>123345))),
         Array(23,'&L=1',Array('add'=>1)),
         Array(23,'&L=1',Array('add'=>2)),

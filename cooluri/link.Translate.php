@@ -151,6 +151,7 @@ class Link_Translate {
             //now we have a uri which will be parsed (without unwanted stuff)
             $finaluriparts = Array();
             if (!empty($uri) && empty($cachedparams)) {
+                $db = Link_DB::getInstance();
                 // now we remove trailing slash
                 $uri = preg_replace('~/*$~','',$uri);
 
@@ -199,7 +200,6 @@ class Link_Translate {
                                         $finaluriparts[(string)$part->parameter] = $par;
                                         // we do
                                     } else {
-                                        $db = Link_DB::getInstance();
                                         $res = $db->query(preg_replace('~^'.$db->escape($part['key']).'$~',(string)$part->lookindb->from,$cp));
                                         $row = $db->fetch_row($res);
                                         // we return value only if we found something
@@ -417,6 +417,8 @@ class Link_Translate {
         if (!empty(self::$conf->cooluris) && self::$conf->cooluris==1 && !$dontconvert) {
             // if cache is allowed, we'll look for an uri
             $uriFromCache = $this->getCachedUri($params, $forceUpdate);
+            $cacheduri = false;
+            $updatecacheid = false;
             if ($uriFromCache!=null) {
                 if (is_array($uriFromCache)) {
                     // not good, still needs to be refactored
@@ -523,7 +525,7 @@ class Link_Translate {
         if (!empty(self::$conf->predefinedparts) && !empty(self::$conf->predefinedparts->part)) {
 
             foreach (self::$conf->predefinedparts->part as $ppart) {
-                if (isset($params[(string)$ppart->parameter])) {
+                if (isset($uri->params[(string)$ppart->parameter])) {
                     $value = $uri->params[(string)$ppart->parameter];
                     $uf = Link_Func::user_func($ppart, $value, $uri->originalparams);
                     if ($uf!==FALSE) {
@@ -531,7 +533,7 @@ class Link_Translate {
                     } elseif (!empty($ppart['regexp']) && $ppart['regexp']==1) {
                         $uri->predefparts[(string)$ppart->parameter] = preg_replace('~\([^)]+\)~',empty($ppart->lookindb)? $value :
                                     Link_Func::lookindb($ppart->lookindb->to, $value,$ppart->lookindb,$uri->originalparams),$ppart['key']);
-                    } elseif ($ppart->value== $value) {
+                    } elseif ($ppart->value == $value) {
                         $uri->predefparts[(string)$ppart->parameter] = empty($ppart->lookindb)?(string)$ppart['key']:Link_Func::lookindb($ppart->lookindb->to, $value,$ppart->lookindb,$uri->originalparams);
                     }
                     unset($uri->params[(string)$ppart->parameter]);
