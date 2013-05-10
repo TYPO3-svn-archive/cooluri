@@ -1,3 +1,18 @@
+CoolUri 1.0.33:
+Link fix module
+Bug #40092: Link to the CoolUri manual on docs.google removed
+Bug #25947: Mountpoint page name fix
+Bug #9579: Mountpoint domain fix
+Bug #6080 fix - conversion of | added
+Bug #38316 fix - original params are now passed to user_func
+Bug #39090 fix - convert encoded [] when redirecting from old to new
+Bug #38054 fix - hook changed to prevent double content generation
+Bug #44729 fix - key length
+Bug #3360: New feature - defaults - default values for not set parameters...
+Bug #35799 fix - $_SERVER replaced by getIndpEnv
+Bug #35799 fix - $_SERVER replaced by getIndpEnv
+Bug #45916 fix - random shortcut now works correctly and ignores not in menu pages
+
 CoolUri 1.0.29:
 - Languages under different domains support
 
