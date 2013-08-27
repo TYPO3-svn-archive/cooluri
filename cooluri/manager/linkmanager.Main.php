@@ -28,9 +28,10 @@ class LinkManger_Main {
   private $table = 'link_';
   private $lt;
 
-  public function __construct($file,$conf) {
+  public function __construct($file,$conf,$res = '') {
     $this->db = Link_DB::getInstance();
     $this->file = $file;
+    $this->resPath = $res;
 
     $this->lt = Link_Translate::getInstance($conf);
     $this->enable = (!empty(Link_Translate::$conf->cache) && !empty(Link_Translate::$conf->cache->usecache) && Link_Translate::$conf->cache->usecache==1);
@@ -43,9 +44,9 @@ class LinkManger_Main {
 
     $content = '';
 
-    if (empty($_GET['mod'])) {
-      $content .= $this->welcome();
-    } else {
+//    if (empty($_GET['mod'])) {
+//      $content .= $this->welcome();
+//    } else {
       switch ($_GET['mod']) {
         case 'cache': $content .= $this->cache(); break;
         case 'old': $content .= $this->old(); break;
@@ -55,9 +56,9 @@ class LinkManger_Main {
         case 'all': $content .= $this->all(); break;
         case 'sticky': $content .= $this->sticky(); break;
         case 'redirect': $content .= $this->redirect(); break;
-        default: $content .= $this->welcome();
+        default: $content .= $this->cache();
       }
-    }
+//    }
     return $content;
   }
 
@@ -75,13 +76,13 @@ class LinkManger_Main {
     $c .= '
       <h2>Force all links to update upon next hit</h2>
       <p>Upon next page hit, all links will be regenerated and if changed, old link will be moved to "oldlinks".</p>
-      <form method="post" action="'.$this->file.'?mod=all">
+      <form method="post" action="'.$this->file.'mod=all">
         <input type="submit" name="refresh" value="FORCE UPDATE OF ALL LINKS" />
       </form>
 
       <h2>Start againg</h2>
       <p>Delete everything - cache and oldlinks.</p>
-      <form method="post" action="'.$this->file.'?mod=all">
+      <form method="post" action="'.$this->file.'mod=all">
         <input type="submit" name="delete" value="DELETE EVERYTHING AND START AGAIN" />
       </form>
     ';
@@ -177,7 +178,7 @@ class LinkManger_Main {
 
   private function getBackLink() {
     if (!empty($_GET['from'])) $from = explode(':',$_GET['from']);
-    return '<p class="center"><a href="'.$this->file.(empty($from)?'':'?').(empty($from[0])?'':'mod='.$from[0].(empty($from[1])?'':'&amp;l='.$from[1])).'">&lt;&lt; Back</a></p>';
+    return '<p class="center"><a href="'.$this->file.(empty($from[0])?'':'mod='.$from[0].(empty($from[1])?'':'&amp;l='.$from[1])).'">&lt;&lt; Back</a></p>';
   }
 
   public function cache() {
@@ -191,14 +192,14 @@ class LinkManger_Main {
     $c = '<h1>Cached links</h1>';
 
     $c .= '<p class="center">';
-    $c .= '<b><a href="'.$this->file.'?mod=cache&amp;l='.urlencode('%').'">all</a></b>
+    $c .= '<b><a href="'.$this->file.'mod=cache&amp;l='.urlencode('%').'">all</a></b>
     ';
     for ($i=ord('A');$i<=ord('Z');$i++) {
-      $c .= '<b><a href="'.$this->file.'?mod=cache&amp;l='.strtoupper(chr($i)).'">'.strtoupper(chr($i)).'</a></b>
+      $c .= '<b><a href="'.$this->file.'mod=cache&amp;l='.strtoupper(chr($i)).'">'.strtoupper(chr($i)).'</a></b>
       ';
     }
     $c .= '</p>';
-    $c .= '<form method="get" action="'.$this->file.'">
+    $c .= '<form method="post" action="'.$this->file.'">
     <p class="center">
       Link starts with: <input type="text" name="l" class="a" value="'.htmlspecialchars($let).'" />
       <input type="hidden" name="mod" value="cache" />
@@ -218,7 +219,7 @@ class LinkManger_Main {
 	    $num = $this->db->num_rows($q);
 	    if ($num>0) {
 	      $c .= '<p class="center">Records found: '.$num.'</p>';
-	      $c .= '<form method="post" action="'.$this->file.'?mod=cache">';
+	      $c .= '<form method="post" action="'.$this->file.'mod=cache">';
 	      $c .= '<table id="list"><tr><th class="left">Cached URI</th><th>Parameters</th><th>Cached</th><th>Last check</th><th>Sticky</th><th>Action</th>';
 	      while ($row = $this->db->fetch($q)) {
 	        $c .= '<tr>
@@ -227,10 +228,10 @@ class LinkManger_Main {
 	          <td>'.$row['crdatetime'].'</td>
 	          <td>'.$row['tstamp'].'</td>
 	          <td>'.($row['sticky']?'YES':'NO').'</td>
-	          <td class="nowrap"><a href="'.$this->file.'?mod=link&amp;lid='.$row['id'].'"><img src="img/button_edit.gif" alt="Edit" title="Edit" /></a>
-	              <a href="'.$this->file.'?mod=update&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_refresh.gif" alt="Update" title="Update" /></a>
-	              <a href="'.$this->file.'?mod=delete&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_garbage.gif" alt="Delete" title="Delete" onclick="return confirm(\'Are you sure?\');" /></a>
-	              <a href="'.$this->file.'?mod=sticky&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="img/button_sticky.gif" alt="Sticky on/off" title="Sticky on/off" /></a>
+	          <td class="nowrap"><a href="'.$this->file.'mod=link&amp;lid='.$row['id'].'"><img src="'.$this->resPath.'img/button_edit.gif" alt="Edit" title="Edit" /></a>
+	              <a href="'.$this->file.'mod=update&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="'.$this->resPath.'img/button_refresh.gif" alt="Update" title="Update" /></a>
+	              <a href="'.$this->file.'mod=delete&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="'.$this->resPath.'img/button_garbage.gif" alt="Delete" title="Delete" onclick="return confirm(\'Are you sure?\');" /></a>
+	              <a href="'.$this->file.'mod=sticky&amp;lid='.$row['id'].'&amp;from=cache:'.$let.'"><img src="'.$this->resPath.'img/button_sticky.gif" alt="Sticky on/off" title="Sticky on/off" /></a>
 	          </td>
 	        </tr>';
 	      }
@@ -254,10 +255,10 @@ class LinkManger_Main {
     $c = '<h1>Old links</h1>';
 
     $c .= '<p class="center">';
-    $c .= '<b><a href="'.$this->file.'?mod=old">all</a></b>
+    $c .= '<b><a href="'.$this->file.'mod=old">all</a></b>
     ';
     for ($i=ord('A');$i<=ord('Z');$i++) {
-      $c .= '<b><a href="'.$this->file.'?mod=old&amp;l='.strtoupper(chr($i)).'">'.strtoupper(chr($i)).'</a></b>
+      $c .= '<b><a href="'.$this->file.'mod=old&amp;l='.strtoupper(chr($i)).'">'.strtoupper(chr($i)).'</a></b>
       ';
     }
     $c .= '</p>';
@@ -275,14 +276,14 @@ class LinkManger_Main {
     $num = $this->db->num_rows($q);
     if ($num>0) {
       $c .= '<p class="center">Records found: '.$num.'</p>';
-      $c .= '<form method="post" action="'.$this->file.'?mod=cache">';
+      $c .= '<form method="post" action="'.$this->file.'mod=cache">';
       $c .= '<table id="list"><tr><th class="left">Old URI</th><th class="left">Cached URI</th><th>Moved to olds</th><th>Action</th>';
       while ($row = $this->db->fetch($q)) {
         $c .= '<tr>
           <td class="left">'.$row['ourl'].'</td>
           <td class="left">'.$row['lurl'].'</td>
           <td>'.$row['tstamp'].'</td>
-          <td class="nowrap"><a href="'.$this->file.'?mod=delete&amp;old&amp;lid='.$row['id'].'&amp;from=old:'.$let.'"><img src="img/button_garbage.gif" alt="Delete" title="Delete" onclick="return confirm(\'Are you sure?\');" /></a>
+          <td class="nowrap"><a href="'.$this->file.'mod=delete&amp;old&amp;lid='.$row['id'].'&amp;from=old:'.$let.'"><img src="'.$this->resPath.'img/button_garbage.gif" alt="Delete" title="Delete" onclick="return confirm(\'Are you sure?\');" /></a>
           </td>
         </tr>';
       }
@@ -366,7 +367,7 @@ class LinkManger_Main {
           $this->db->query('DELETE FROM '.$this->table.'oldlinks WHERE url='.$this->db->escape($data['url']));
           if ($q) {
             $c .= '<div class="succes"><p>The new link was saved successfully.</p></div>';
-            $c .= '<p class="center"><a href="'.$this->file.'?mod=cache&l='.htmlspecialchars($data['url']).'">Show &gt;&gt;</a></p>';
+            $c .= '<p class="center"><a href="'.$this->file.'mod=cache&l='.htmlspecialchars($data['url']).'">Show &gt;&gt;</a></p>';
             $data = Array();
           }
           else $c .= '<div class="error"><p>Could not save the link.</p></div>';
@@ -387,14 +388,14 @@ class LinkManger_Main {
           $this->db->query('DELETE FROM '.$this->table.'oldlinks WHERE url='.$this->db->escape($data['url']));
           if ($qq) {
             $c .= '<div class="succes"><p>The link was updated successfully.</p></div>';
-            $c .= '<p class="center"><a href="'.$this->file.'?mod=cache&l='.htmlspecialchars($data['url']).'">Show &gt;&gt;</a></p>';
+            $c .= '<p class="center"><a href="'.$this->file.'mod=cache&l='.htmlspecialchars($data['url']).'">Show &gt;&gt;</a></p>';
           }
           else $c .= '<div class="error"><p>Could not update the link.</p></div>';
         }
       }
     }
 
-    $c .= '<form method="post" action="'.$this->file.'?mod=link'.($new?'':'&amp;lid='.$id).'">
+    $c .= '<form method="post" action="'.$this->file.'mod=link'.($new?'':'&amp;lid='.$id).'">
     <fieldset>
     <legend>URI details</legend>
     <label for="url">URI:</label><br />
@@ -429,7 +430,7 @@ class LinkManger_Main {
 
     $allq = $this->db->query('SELECT * FROM '.$this->table.'cache ORDER BY url');
 
-    $c .= '<form method="post" action="'.$this->file.'?mod=redirect">
+    $c .= '<form method="post" action="'.$this->file.'mod=redirect">
     <fieldset>
     <legend>Redirect details</legend>
     <label for="url">From:</label><br />
@@ -451,14 +452,17 @@ class LinkManger_Main {
 
   public function menu() {
     if ($this->enable)
-      $mods = Array(''=>'Home','cache'=>'Cached links','old'=>'Old links','link'=>'New link','redirect'=>'New redirect','all'=>'Delete/Update all');
+      $mods = Array('cache'=>'Cached links','old'=>'Old links','link'=>'New link','redirect'=>'New redirect','all'=>'Delete/Update all');
     else
       $mods = Array(''=>'Home');
     $cm = '';
     if (!empty($_GET['mod'])) $cm = $_GET['mod'];
+    if (empty($cm)) {
+        $cm = 'cache';
+    }
     $c = '<ul>';
     foreach ($mods as $k=>$v) {
-      $c .= '<li><a href="'.$this->file.($k?'?mod='.$k:'').'"'.($cm==$k?' class="act"':'').'>'.$v.'</a></li>';
+      $c .= '<li><a href="'.$this->file.($k?'mod='.$k:'').'"'.($cm==$k?' class="act"':'').'>'.$v.'</a></li>';
     }
     $c .= '</ul>';
     return $c;

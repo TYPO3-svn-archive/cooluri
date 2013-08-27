@@ -20,23 +20,20 @@ ul {
 	margin: 0;
 	padding: 0;
 }
-div.typo3-noDoc table#list th {
-	font-size: 0.7em;
-}
-div.typo3-noDoc table#list {
+div.typo3-fullDoc table#list {
 	border-collapse: collapse;
 }
-div.typo3-noDoc table#list td {
-	padding: 3px 5px;
+div.typo3-fullDoc table#list td {
+	padding: 3px 10px;
 }
-div.typo3-noDoc table#list .left {
+div.typo3-fullDoc table#list .left {
 	text-align: left;
 }
-div.typo3-noDoc div.error p {
+div.typo3-fullDoc div.error p {
 	color: red;
 	font-weight: bold;
 }
-div.typo3-noDoc div.succes p {
+div.typo3-fullDoc div.succes p {
 	color: Green;
 	font-weight: bold;
 }
@@ -48,4 +45,26 @@ fieldset input.check {
 }
 .nowrap {
 	white-space: nowrap;
+}
+h1 {
+    text-align: left;
+}
+h2 {
+    margin: 10px 0 0 0;
+}
+fieldset {
+    padding: 5px 10px;
+    margin-bottom: 10px;
+}
+div.typo3-fullDoc table#list th {
+    font-size: 1em;
+    padding: 0 10px;
+}
+table#list {
+    margin-top: 10px;
+}
+div#typo3-docheader-row2 b {
+    display: block;
+    line-height: 21px;
+    padding: 0 10px;
 }

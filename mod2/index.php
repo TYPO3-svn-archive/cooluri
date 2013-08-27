@@ -23,11 +23,6 @@
  ***************************************************************/
 
 // DEFAULT initialization of a module [BEGIN]
-unset($MCONF);
-require_once('conf.php');
-require_once($BACK_PATH . 'init.php');
-require_once($BACK_PATH . 'template.php');
-
 $LANG->includeLLFile('EXT:cooluri/mod1/locallang.xml');
 require_once(PATH_t3lib . 'class.t3lib_scbase.php');
 $BE_USER->modAccess($MCONF, 1); // This checks permissions and exits if the users has no permission for entry.
@@ -50,9 +45,7 @@ class  tx_cooluri_module2 extends t3lib_SCbase {
      */
     function init() {
         global $BE_USER, $LANG, $BACK_PATH, $TCA_DESCR, $TCA, $CLIENT, $TYPO3_CONF_VARS;
-
         parent::init();
-
         if (t3lib_div::_GP('clear_all_cache')) {
             $this->include_once[] = PATH_t3lib . 'class.t3lib_tcemain.php';
         }
@@ -67,15 +60,18 @@ class  tx_cooluri_module2 extends t3lib_SCbase {
     function main() {
         global $BE_USER, $LANG, $BACK_PATH, $TCA_DESCR, $TCA, $CLIENT, $TYPO3_CONF_VARS;
 
-        $this->doc = t3lib_div::makeInstance('noDoc');
+        $this->doc = t3lib_div::makeInstance('template');
+        $this->doc->setModuleTemplate(t3lib_extMgm::extPath('cooluri') . 'mod2/mod_template.html');
         $this->doc->backPath = $BACK_PATH;
+        $this->pageRenderer = $this->doc->getPageRenderer();
+        $this->pageRenderer->addCssFile($BACK_PATH . t3lib_extMgm::extRelPath('cooluri') . 'mod1/style.css');
 
-        $this->doc->form = '<form action="" method="POST">';
-
-        $this->content .= $this->doc->startPage($LANG->getLL('title'));
-        $this->content .= $this->doc->header('CoolURI URL Fixer');
-
-
+        $markers['CONTENT'] = $this->moduleContent();
+        // Build the <body> for the module
+        $this->doc->form = '<form action="" method="post">';
+        $this->content = $this->doc->startPage('');
+        $this->content .= $this->doc->moduleBody($this->pageinfo, null, $markers);
+        $this->content = $this->doc->insertStylesAndJS($this->content);
     }
 
     /**
@@ -83,7 +79,8 @@ class  tx_cooluri_module2 extends t3lib_SCbase {
      *
      * @return    void
      */
-    function printContent() {
+    function moduleContent() {
+        $this->content = '';
         if (!empty($_POST['delete']) && is_array($_POST['delete'])) {
             foreach ($_POST['delete'] as $id=>$v) {
                 $GLOBALS['TYPO3_DB']->exec_DELETEquery('link_cache','id = '.(int)$id);
@@ -92,10 +89,10 @@ class  tx_cooluri_module2 extends t3lib_SCbase {
             $tce->start(null,null);
             $tce->clear_cacheCmd('pages');
 
-            $this->content .= '<div class="typo3-message">A link has been removed from cache, please reload page where the link is present (not the page itself, but e.g. parent page with this link in menu) in order to generate it again.</div>';
+            $this->content .= '<div class="typo3-message message-information">A link has been removed from cache, please reload page where the link is present (not the page itself, but e.g. parent page with this link in menu) in order to generate it again.</div>';
         }
 
-        $this->content .= '<hr/><h2>Find URL</h2><p>This tool can fix problems with wrong URL that are result of duplicate content (e.g. when you delete a page and create a new one with the same name, then its URL
+        $this->content .= '<h2>Find URL</h2><p>This tool can fix problems with wrong URL that are result of duplicate content (e.g. when you delete a page and create a new one with the same name, then its URL
         points to the deleted one). Just paste any URL here and when found, delete it.</p>
             <input type="text" name="url" size="100" value="'.(!empty($_POST['url']) ? htmlspecialchars($_POST['url']) : '').'" /><input type="submit" value="Find URL" />
         ';
@@ -109,6 +106,11 @@ class  tx_cooluri_module2 extends t3lib_SCbase {
         }
 
         $this->content .= '</div>';
+        return $this->content;
+    }
+
+    function printContent() {
+        $this->content .= $this->doc->endPage();
         echo $this->content;
     }
 

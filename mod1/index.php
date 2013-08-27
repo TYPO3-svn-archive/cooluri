@@ -1,170 +1,116 @@
 <?php
 /***************************************************************
-*  Copyright notice
-*
-*  (c) 2008 Jan Bednarik <info@bednarik.org>
-*  All rights reserved
-*
-*  This script is part of the TYPO3 project. The TYPO3 project is
-*  free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation; either version 2 of the License, or
-*  (at your option) any later version.
-*
-*  The GNU General Public License can be found at
-*  http://www.gnu.org/copyleft/gpl.html.
-*
-*  This script is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  This copyright notice MUST APPEAR in all copies of the script!
-***************************************************************/
-
-	// DEFAULT initialization of a module [BEGIN]
-unset($MCONF);
-require_once('conf.php');
-require_once($BACK_PATH.'init.php');
-require_once($BACK_PATH.'template.php');
+ *  Copyright notice
+ *
+ *  (c) 2008 Jan Bednarik <info@bednarik.org>
+ *  All rights reserved
+ *
+ *  This script is part of the TYPO3 project. The TYPO3 project is
+ *  free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The GNU General Public License can be found at
+ *  http://www.gnu.org/copyleft/gpl.html.
+ *
+ *  This script is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  This copyright notice MUST APPEAR in all copies of the script!
+ ***************************************************************/
 
 $LANG->includeLLFile('EXT:cooluri/mod1/locallang.xml');
-require_once(PATH_t3lib.'class.t3lib_scbase.php');
-$BE_USER->modAccess($MCONF,1);	// This checks permissions and exits if the users has no permission for entry.
-	// DEFAULT initialization of a module [END]
+require_once(PATH_t3lib . 'class.t3lib_scbase.php');
+$BE_USER->modAccess($MCONF, 1); // This checks permissions and exits if the users has no permission for entry.
+// DEFAULT initialization of a module [END]
 
-require_once '../class.tx_cooluri.php';
+require_once $BACK_PATH . t3lib_extMgm::extRelPath('cooluri') . 'class.tx_cooluri.php';
 
 /**
  * Module 'CoolURI' for the 'cooluri' extension.
  *
- * @author	Jan Bednarik <info@bednarik.org>
- * @package	TYPO3
- * @subpackage	tx_cooluri
+ * @author    Jan Bednarik <info@bednarik.org>
+ * @package    TYPO3
+ * @subpackage    tx_cooluri
  */
 class  tx_cooluri_module1 extends t3lib_SCbase {
-				var $pageinfo;
+    var $pageinfo;
 
-				/**
-				 * Initializes the Module
-				 * @return	void
-				 */
-				function init()	{
-					global $BE_USER,$LANG,$BACK_PATH,$TCA_DESCR,$TCA,$CLIENT,$TYPO3_CONF_VARS;
+    /**
+     * Initializes the Module
+     * @return    void
+     */
+    function init() {
+        global $BE_USER, $LANG, $BACK_PATH, $TCA_DESCR, $TCA, $CLIENT, $TYPO3_CONF_VARS;
+        parent::init();
+    }
 
-					parent::init();
+    /**
+     * Main function of the module. Write the content to $this->content
+     * If you chose "web" as main module, you will need to consider the $this->id parameter which will contain the uid-number of the page clicked in the page tree
+     *
+     * @return    [type]        ...
+     */
+    function main() {
+        global $BE_USER, $LANG, $BACK_PATH, $TCA_DESCR, $TCA, $CLIENT, $TYPO3_CONF_VARS;
 
-					/*
-					if (t3lib_div::_GP('clear_all_cache'))	{
-						$this->include_once[] = PATH_t3lib.'class.t3lib_tcemain.php';
-					}
-					*/
-				}
+        if ($BE_USER->user['admin']) {
 
-				/**
-				 * Adds items to the ->MOD_MENU array. Used for the function menu selector.
-				 *
-				 * @return	void
-				 */
-				function menuConfig()	{
-					global $LANG;
-					$this->MOD_MENU = Array (
-						'function' => Array (
-							'1' => $LANG->getLL('function1'),
-							'2' => $LANG->getLL('function2'),
-							'3' => $LANG->getLL('function3'),
-						)
-					);
-					parent::menuConfig();
-				}
+            $this->doc = t3lib_div::makeInstance('template');
+            $this->doc->setModuleTemplate(t3lib_extMgm::extPath('cooluri') . 'mod1/mod_template.html');
+            $this->doc->backPath = $BACK_PATH;
+            $this->pageRenderer = $this->doc->getPageRenderer();
 
-				/**
-				 * Main function of the module. Write the content to $this->content
-				 * If you chose "web" as main module, you will need to consider the $this->id parameter which will contain the uid-number of the page clicked in the page tree
-				 *
-				 * @return	[type]		...
-				 */
-				function main()	{
-					global $BE_USER,$LANG,$BACK_PATH,$TCA_DESCR,$TCA,$CLIENT,$TYPO3_CONF_VARS;
+            $this->pageRenderer->addCssFile($BACK_PATH . t3lib_extMgm::extRelPath('cooluri') . 'mod1/style.css');
 
-					// Access check!
-					// The page will show only if there is a valid page and if this page may be viewed by the user
-					$this->pageinfo = t3lib_BEfunc::readPageAccess($this->id,$this->perms_clause);
-					$access = is_array($this->pageinfo) ? 1 : 0;
-
-					if (($this->id && $access) || ($BE_USER->user['admin'] && !$this->id))	{
-            
-            $this->doc = t3lib_div::makeInstance('noDoc');
-						$this->doc->backPath = $BACK_PATH;
-            
-            $this->doc->JScode = '
-				<link rel="stylesheet" type="text/css" href="style.css" />
-			'; 
-            
-            $this->content.=$this->doc->startPage($LANG->getLL('title'));
-						$this->content.=$this->doc->header('CoolURIs\' project\'s LinkManager');
-            
-            require_once '../cooluri/manager/linkmanager.Main.php';
-            /*if (file_exists(PATH_typo3conf.'CoolUriConf.xml'))
-              $lm = new LinkManger_Main('index.php',PATH_typo3conf.'CoolUriConf.xml');
-            elseif (file_exists('../cooluri/CoolUriConf.xml'))
-              $lm = new LinkManger_Main('index.php','../cooluri/CoolUriConf.xml');
-            else {
-              $this->content .= 'XML Config file not found';
-              return;
-            }*/
-            
+            require_once $BACK_PATH . t3lib_extMgm::extRelPath('cooluri') . 'cooluri/manager/linkmanager.Main.php';
             $this->confArray = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['cooluri']);
-            $bp = str_replace('typo3/','',$BACK_PATH);
-            if (file_exists($bp.$this->confArray['XMLPATH'].'CoolUriConf.xml'))
-              $lt = $bp.$this->confArray['XMLPATH'].'CoolUriConf.xml';
-            elseif (file_exists(PATH_typo3conf.'CoolUriConf.xml'))
-              $lt = PATH_typo3conf.'CoolUriConf.xml';
-            elseif (file_exists(dirname(__FILE__).'/../cooluri/CoolUriConf.xml'))
-              $lt = dirname(__FILE__).'/../cooluri/CoolUriConf.xml';
-            else {
-              $this->content .= 'XML Config file not found';
-              return;
+            $bp = str_replace('typo3/', '', $BACK_PATH);
+            if (file_exists($bp . $this->confArray['XMLPATH'] . 'CoolUriConf.xml')) {
+                $lt = $bp . $this->confArray['XMLPATH'] . 'CoolUriConf.xml';
+            } elseif (file_exists(PATH_typo3conf . 'CoolUriConf.xml')) {
+                $lt = PATH_typo3conf . 'CoolUriConf.xml';
+            } elseif (file_exists(dirname(__FILE__) . '/../cooluri/CoolUriConf.xml')) {
+                $lt = dirname(__FILE__) . '/../cooluri/CoolUriConf.xml';
+            } else {
+                $this->content .= 'XML Config file not found';
+                return;
             }
-            $lm = new LinkManger_Main('index.php',$lt);
-              
-            
+            $lm = new LinkManger_Main('mod.php?M=tools_txcooluriM1&', $lt, $BACK_PATH . t3lib_extMgm::extRelPath('cooluri').'mod1/');
+
             $this->content .= $lm->menu();
             $this->content .= $lm->main();
-            
-					} else {
-							// If no access or if ID == zero
 
-						$this->doc = t3lib_div::makeInstance('mediumDoc');
-						$this->doc->backPath = $BACK_PATH;
+            $markers['CONTENT'] = $this->content;
 
-						$this->content.=$this->doc->startPage($LANG->getLL('title'));
-						$this->content.=$this->doc->header($LANG->getLL('title'));
-						$this->content.=$this->doc->spacer(5);
-						$this->content.=$this->doc->spacer(10);
-					}
-				}
+            // Build the <body> for the module
+            $this->doc->form = '';
+            $this->content = $this->doc->startPage('');
+            $this->content .= $this->doc->moduleBody($this->pageinfo, null, $markers);
+            $this->content = $this->doc->insertStylesAndJS($this->content);
+        }
+    }
 
-				/**
-				 * Prints out the module HTML
-				 *
-				 * @return	void
-				 */
-				function printContent()	{
-					$this->content .= '</div>';
-          echo $this->content;
-				}
+    /**
+     * Prints out the module HTML
+     *
+     * @return    void
+     */
+    function printContent() {
+        $this->content .= $this->doc->endPage();
+        echo $this->content;
+    }
 
 
-			}
-
-
-
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cooluri/mod1/index.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cooluri/mod1/index.php']);
 }
 
 
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cooluri/mod1/index.php']) {
+    include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/cooluri/mod1/index.php']);
+}
 
 
 // Make instance:
@@ -172,7 +118,7 @@ $SOBE = t3lib_div::makeInstance('tx_cooluri_module1');
 $SOBE->init();
 
 // Include files?
-foreach($SOBE->include_once as $INC_FILE)	include_once($INC_FILE);
+foreach ($SOBE->include_once as $INC_FILE) include_once($INC_FILE);
 
 $SOBE->main();
 $SOBE->printContent();

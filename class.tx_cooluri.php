@@ -274,18 +274,12 @@ class tx_cooluri
                 if (!empty($params['LD']['domain'])) {
                     $domain = $params['LD']['domain'];
                 } elseif (!empty($pars['MP'])) {
-                    // found MP call get ID of page which mounts
-                    $mpSource = (int)substr($pars['MP'], strpos($pars['MP'], '-') + 1);
-                    // and of page which is mounted
-                    $mpTarget = (int)substr($pars['MP'], 0, strpos($pars['MP'], '-'));
-                    $mpTargetDomain = self::getDomain($mpTarget);
-                    $defaultDomain = self::getDomain((int)$pars['id']);
-                    // now if a link should be generated to the page which is mounted, domain which mounts should be used
-                    if ($mpTargetDomain == $defaultDomain) {
+                    // found MP call - get ID of page which mounts
+                    $mpSource = (int) substr($pars['MP'],strpos($pars['MP'],'-')+1);
+                    if ($mpSource > 0) {
                         $domain = self::getDomain($mpSource);
-                    }
-                    else {
-                        $domain = $defaultDomain;
+                    } else {
+                        $domain = self::getDomain((int)$pars['id']);
                     }
                 } else {
                     $domain = self::getDomain((int)$pars['id']);
@@ -365,14 +359,14 @@ class tx_cooluri
             $q = $db->exec_SELECTquery('pages.title, pages.pid, pages.is_siteroot, pages.uid AS id, sys_domain.domainName, sys_domain.redirectTo', 'pages LEFT JOIN sys_domain ON pages.uid=sys_domain.pid', 'pages.uid=' . $id . $enable . ' AND (sys_domain.hidden=0 OR sys_domain.hidden IS NULL)', '', 'sys_domain.sorting');
             $page = $db->sql_fetch_assoc($q);
 
-            $temp = $db->exec_SELECTquery('COUNT(*) as num', 'sys_template', 'deleted=0 AND hidden=0 AND pid=' . $id . ' AND root=1' . $enable2);
-            $count = $db->sql_fetch_assoc($temp);
-
             if ($page['domainName'] && !$page['redirectTo']) {
                 $resDom = preg_replace('~^.*://(.*)/?$~', '\\1', preg_replace('~/$~', '', $page['domainName']));
                 t3lib_div::devLog('Resolved domain: ' . $resDom, 'CoolUri');
                 return $resDom;
             }
+
+            $temp = $db->exec_SELECTquery('COUNT(*) as num', 'sys_template', 'deleted=0 AND hidden=0 AND pid=' . $id . ' AND root=1' . $enable2);
+            $count = $db->sql_fetch_assoc($temp);
 
             if ($count['num'] > 0 || $page['is_siteroot'] == 1) {
                 t3lib_div::devLog('Domain missing for ID ' . $id . ', using HTTP_HOST ' . t3lib_div::getIndpEnv('HTTP_HOST'), 'CoolUri');
@@ -462,14 +456,6 @@ class tx_cooluri
         $langId = (int)$langId;
 
         $pagepath = Array();
-
-        // If a Mount Point variable has been passed then determine the original id
-        if (!empty($value['MP'])) {
-            $_mp_parts = explode('-',$value['MP']);
-            if ((!empty($_mp_parts[1])) && (is_numeric($_mp_parts[1]))) {
-                $id = $_mp_parts[1];
-            }
-        }
 
         if (empty($conf->alias)) {
             $sel = (string)$conf->title;
