@@ -26,8 +26,7 @@ $LANG->includeLLFile('EXT:cooluri/mod1/locallang.xml');
 require_once(PATH_t3lib . 'class.t3lib_scbase.php');
 $BE_USER->modAccess($MCONF, 1); // This checks permissions and exits if the users has no permission for entry.
 // DEFAULT initialization of a module [END]
-
-require_once $BACK_PATH . t3lib_extMgm::extRelPath('cooluri') . 'class.tx_cooluri.php';
+require_once t3lib_extMgm::extPath('cooluri') . 'class.tx_cooluri.php';
 
 /**
  * Module 'CoolURI' for the 'cooluri' extension.
@@ -66,11 +65,11 @@ class  tx_cooluri_module1 extends t3lib_SCbase {
 
             $this->pageRenderer->addCssFile($BACK_PATH . t3lib_extMgm::extRelPath('cooluri') . 'mod1/style.css');
 
-            require_once $BACK_PATH . t3lib_extMgm::extRelPath('cooluri') . 'cooluri/manager/linkmanager.Main.php';
+            require_once t3lib_extMgm::extPath('cooluri') . 'cooluri/manager/linkmanager.Main.php';
             $this->confArray = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['cooluri']);
             $bp = str_replace('typo3/', '', $BACK_PATH);
-            if (file_exists($bp . $this->confArray['XMLPATH'] . 'CoolUriConf.xml')) {
-                $lt = $bp . $this->confArray['XMLPATH'] . 'CoolUriConf.xml';
+            if (file_exists(PATH_site . $this->confArray['XMLPATH'] . 'CoolUriConf.xml')) {
+                $lt = PATH_site . $this->confArray['XMLPATH'] . 'CoolUriConf.xml';
             } elseif (file_exists(PATH_typo3conf . 'CoolUriConf.xml')) {
                 $lt = PATH_typo3conf . 'CoolUriConf.xml';
             } elseif (file_exists(dirname(__FILE__) . '/../cooluri/CoolUriConf.xml')) {
