@@ -113,19 +113,23 @@ class Link_Func {
   public static function lookindb($sql,$param='',$conf=null,$allparams=array()) {
     self::$allparams = $allparams;
 
-    $param = Link_DB::escape($param);
+    $escapedParam = Link_DB::escape($param);
 
     $pieces = explode('$1',$sql);
     foreach ($pieces as $k=>$v) {
         $pieces[$k] = preg_replace_callback('~\{([^}]+)\}~',array(self,'replaceParameterInSQL'),$v);
     }
-    $sql = implode($param,$pieces);
+    $sql = implode($escapedParam,$pieces);
 
     $db = Link_DB::getInstance();
     $res = $db->query($sql);
-    if (mysql_error() || !$res) return $param;
+    if (mysql_error() || !$res) {
+        return $param;
+    }
     $row = $db->fetch_row($res);
-    if (!$row) return $param;
+    if (!$row) {
+        return $param;
+    }
     $val = $row[0];
     $k = 1;
     while (empty($val) && isset($row[$k])) {

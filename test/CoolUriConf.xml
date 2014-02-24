@@ -53,7 +53,7 @@
     <part>
       <parameter>paramB</parameter>
       <lookindb>
-        <to>SELECT title FROM sometable WHERE uid=$1</to>
+        <to>SELECT title FROM pages WHERE uid=$1</to>
         <t3conv>1</t3conv>
       </lookindb>
     </part>

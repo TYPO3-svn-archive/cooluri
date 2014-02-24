@@ -37,7 +37,8 @@ class tx_cooluritest_pi1 extends tslib_pibase {
         Array(25,'&paramD=view-list|page_id-142',Array('paramD'=>'view-list|page_id-142')),
         Array(25,'&atParam[@atValue]=ATVAL',Array('atParam' => array('@atValue' => 'ATVAL'))),
         Array(22,'&paramA=0&paramD=0',Array('paramA'=>'0','paramD'=>'0')),
-        Array(25,'&paramX=view-list|page_id-142',Array('paramX'=>'view-list|page_id-142'))
+        Array(25,'&paramX=view-list|page_id-142',Array('paramX'=>'view-list|page_id-142')),
+        Array(25,'&paramA=FOO&paramB=6666')
     );
 
     function main($content, $conf) {
