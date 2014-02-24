@@ -183,10 +183,10 @@ class LinkManger_Main {
 
   public function cache() {
 
-    if (empty($_GET['l'])) {
+    if (empty($_REQUEST['l'])) {
       $let = '';
     } else {
-      $let = $_GET['l'];
+      $let = $_REQUEST['l'];
     }
 
     $c = '<h1>Cached links</h1>';
@@ -204,13 +204,13 @@ class LinkManger_Main {
       Link starts with: <input type="text" name="l" class="a" value="'.htmlspecialchars($let).'" />
       <input type="hidden" name="mod" value="cache" />
       <input type="submit" value="Search" class="submit" />
-      <label>Ignore domain: <input type="checkbox" name="domain" value="1" '.(!empty($_GET['domain'])?' checked="checked"':'').'/></label>
+      <label>Ignore domain: <input type="checkbox" name="domain" value="1" '.(!empty($_REQUEST['domain'])?' checked="checked"':'').'/></label>
     </p>
     </form>';
 
     if (!empty($let)) {
 
-    	if (!empty($_GET['domain'])) {
+    	if (!empty($_REQUEST['domain'])) {
     		$let = str_replace('%','.*',$let);
     		$q = $this->db->query('SELECT * FROM '.$this->table.'cache WHERE LOWER(url) RLIKE '.$this->db->escape('^[^@]*@?'.strtolower($let).'.*').' ORDER BY url');
     	} else {
@@ -247,10 +247,10 @@ class LinkManger_Main {
   }
 
   public function old() {
-    if (empty($_GET['l']))
+    if (empty($_REQUEST['l']))
       $let = '%';
     else
-      $let = $_GET['l'];
+      $let = $_REQUEST['l'];
 
     $c = '<h1>Old links</h1>';
 
@@ -262,7 +262,7 @@ class LinkManger_Main {
       ';
     }
     $c .= '</p>';
-    $c .= '<form method="get" action="'.$this->file.'">
+    $c .= '<form method="post" action="'.$this->file.'mod=old">
     <p class="center">
       Link starts with: <input type="text" name="l" class="a" value="'.htmlspecialchars($let).'" />
       <input type="hidden" name="mod" value="cache" />
